@@ -1,0 +1,6 @@
+Hello this is aditya pandey calling from async await file which is just created by the fs module
+This is the appended data by Pandey
+This is the appended data by Pandey
+This is the appended data by Pandey
+This is the appended data by Pandey
+This is the appended data by Pandey
