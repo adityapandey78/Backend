@@ -24,7 +24,7 @@
         <ul id="shortened-urls"></ul>
     </div>
     <script>
-        document.getElementById('shorten-form').addEventListener('submit',(e)=>{
+        document.getElementById('shorten-form').addEventListener('submit', async(e)=>{
             e.preventDefault();
 
             const formdata=new FormData(e.target)
@@ -33,7 +33,22 @@
             const shortCode=formdata.get('shortCode');
 
             console.log(url,shortCode);
-            
+            try {
+              const response=  await fetch('/shorten',{
+                method:'POST',
+                headers:{"Content-Type":"application/json"},
+                body: JSON.stringify({url,shortCode})
+              });
+              //agar sub,it ho gya to response aayega na saveLinks methops se jo mene app.js me bna rkha hai
+              if(response.ok){
+                alert('Submitted Succeefully')
+                e.target.reset()
+              }
+
+            } catch (error) {
+                console.log("the error is:", error);
+                
+            }
         })
     </script>
 </body>
