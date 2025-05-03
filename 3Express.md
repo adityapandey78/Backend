@@ -217,6 +217,11 @@ app.set('views', './views'); // Directory for template files
     ```ejs
     <%- rawHtml %>
     ```
+3. ** Escape HTML**:
+    ```ejs
+    <%= userInput %>
+    ```
+    This will escape any HTML tags in the `userInput` variable.
 
 3. **JavaScript code execution**:
     ```ejs
@@ -258,3 +263,48 @@ app.get('/', (req, res) => {
 - Simple to learn and use
 - Can be used for client and server-side rendering
 - Easy to integrate with Express.js
+
+## EJS Partials
+
+Partials are reusable EJS fragments that help maintain consistent elements across multiple pages (like headers, footers, navigation).
+
+### Basic Usage
+
+```javascript
+// Server-side setup
+app.set('view engine', 'ejs');
+```
+
+**Creating a partial (views/partials/header.ejs):**
+```ejs
+<header>
+    <h1>My Website</h1>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+    </nav>
+</header>
+```
+
+**Using the partial in a template:**
+```ejs
+<%- include('partials/header') %>
+<main>
+    <h2>Welcome to the homepage</h2>
+</main>
+```
+
+Partials keep your templates DRY and make site-wide changes easier to manage.
+  
+## MVC Analogy in Express.js
+- **Model**: Represents the data and business logic of the application. In Express, this can be implemented using a database or data structure to manage application data. For example, using Mongoose for MongoDB models.
+- **View**: Represents the user interface and presentation layer. In Express, this is typically handled using a templating engine like EJS, Pug, or Handlebars to render HTML pages based on data from the model.
+- **Controller**: Acts as an intermediary between the model and view. It handles user input, processes it, and updates the model or view accordingly. In Express, controllers are often implemented as route handlers that respond to HTTP requests.
+- **Routing**: Defines the endpoints and how they respond to client requests. In Express, routing is done using the `app.get()`, `app.post()`, etc., methods to define routes and their corresponding handlers.
+- **Middleware**: Functions that have access to the request and response objects, allowing you to modify the request, response, or perform actions before passing control to the next middleware or route handler. Middleware can be used for tasks like authentication, logging, and error handling.
+- **Error Handling**: In Express, you can define custom error-handling middleware to catch and handle errors that occur during request processing. This allows you to provide meaningful error messages and responses to clients.
+- **Static Files**: Express can serve static files (like images, CSS, and JavaScript) using the `express.static()` middleware. This allows you to easily manage and serve assets in your application.
+- **Session Management**: Express can manage user sessions using middleware like `express-session`, allowing you to store user-specific data across requests. This is useful for implementing features like user authentication and maintaining user state.
+- **Security**: Express provides various middleware and best practices to enhance the security of your application, such as input validation, sanitization, and protection against common web vulnerabilities like XSS and CSRF attacks.
+- **Testing**: Express applications can be tested using various testing frameworks like Mocha, Chai, or Jest. You can write unit tests for your routes, controllers, and middleware to ensure the functionality of your application.
+
