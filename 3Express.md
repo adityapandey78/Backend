@@ -168,4 +168,93 @@ This example demonstrates:
 3. Handling the POST request when the form is submitted
 4. Accessing form data through `req.body`
 5. Sending a response back to the user
+  
+> WHy USE `express.urlencoded()`?
+- The `express.urlencoded()` middleware is used to parse incoming requests with URL-encoded payloads, which is the default format for form submissions in HTML. It converts the data into a JavaScript object and populates `req.body` with the parsed data. This allows you to easily access form data in your route handlers without needing to manually parse the request body.  
 
+## Handling the 404 Error in Express
+- You can use the `app.use()` method to define a middleware function that will handle 404 errors. This middleware should be placed after all your route definitions to catch any requests that do not match any defined routes.  
+``` javascript
+    app.use((req, res, next) => {
+        res.status(404).send('404 Not Found');
+    });
+```
+
+## Express Routers and Modularization
+ - A router in Express.js is a tool to defone a modular and resuable routes in an application  
+ - It is created using the `express.Router()` method and can be used to define routes, middleware, and other functionality.
+ -routes can be defined using methods like `router.get()`,` router.post()`, etc.
+ - The router is mounted in the main app using `app.use('/basepath', router)`.
+ - This allows you to organize your routes into separate files or modules, making your code more maintainable and easier to read.
+
+---
+## Template Engine in EJS
+ ![alt text](image-2.png)
+## EJS (Embedded JavaScript Templates)
+
+EJS is a simple templating engine that lets you generate HTML with plain JavaScript. It supports variables, conditions, loops, includes, and more.
+
+### Setting up EJS in Express
+
+```javascript
+// Install: npm install ejs
+import express from 'express';
+const app = express();
+
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
+app.set('views', './views'); // Directory for template files
+```
+
+### Key Features and Syntax
+
+1. **Variables**:
+    ```ejs
+    <h1><%= title %></h1>
+    ```
+
+2. **Unescaped HTML** (use cautiously):
+    ```ejs
+    <%- rawHtml %>
+    ```
+
+3. **JavaScript code execution**:
+    ```ejs
+    <% if (user.loggedIn) { %>
+      <p>Welcome, <%= user.name %>!</p>
+    <% } else { %>
+      <p>Please log in</p>
+    <% } %>
+    ```
+
+4. **Loops**:
+    ```ejs
+    <ul>
+      <% items.forEach(item => { %>
+         <li><%= item.name %></li>
+      <% }); %>
+    </ul>
+    ```
+
+5. **Including other templates**:
+    ```ejs
+    <%- include('partials/header') %>
+    ```
+
+### Example Usage in Express
+
+```javascript
+app.get('/', (req, res) => {
+  res.render('index', {
+     title: 'Home Page',
+     user: { name: 'John', loggedIn: true },
+     items: [{ name: 'Item 1' }, { name: 'Item 2' }]
+  });
+});
+```
+
+### Benefits
+- Familiar JavaScript syntax
+- Simple to learn and use
+- Can be used for client and server-side rendering
+- Easy to integrate with Express.js

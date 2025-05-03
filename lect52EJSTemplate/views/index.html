@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortner</h1>
+        <form action="/" method="post">
+            <div>
+                <label for="url">Enter URL</label>
+                <input type="url" name="url" id="url" required></input>
+            </div>
+            <div>
+                <label for="shortCode">Short Code</label>
+                <input type="text" name="shortCode" id="shortCode" required></input>    
+            </div>
+            <button type="submit">Shorten</button>
+        </form>
+        <h2>Shortended URL</h2>
+        <!-- <ul id="shortened-urls"></ul> no need as we weill be using the {{shortened-url}} -->
+         <ul>{{shortened_urls}}</ul>
+    </div>
+    <!--No need of script as well-->
+    <script>
+        /*
+        const fetchShortenedURL=async ()=>{
+            const response = await fetch('/link.json')
+            const link = await response.json();
+            console.log("links",link);
+            const list = document.getElementById("shortened-urls");
+            list.innerHTML='';
+
+            for(const[shortCode,url] of Object.entries(link)){
+                const li = document.createElement('li');
+                const truncketedURL = url.length>=20 ?`${url.slice(0,20)}...`:url;
+                li.innerHTML=`<a href='/${shortCode}' target='_blank'>${window.location.origin}/${shortCode} </a> -> ${truncketedURL}`
+                console.log(`${shortCode}:${url}`);
+                list.appendChild(li);
+            }
+        };
+        document.getElementById('shorten-form').addEventListener('submit', async(e)=>{
+            e.preventDefault();
+
+            const formdata=new FormData(e.target)
+
+            const url = formdata.get('url');
+            const shortCode=formdata.get('shortCode');
+
+            console.log(url,shortCode);
+            try {
+              const response=  await fetch('/shorten',{
+                method:'POST',
+                headers:{"Content-Type":"application/json"},
+                body: JSON.stringify({url,shortCode})
+              });
+              //agar sub,it ho gya to response aayega na saveLinks methops se jo mene app.js me bna rkha hai
+              if(response.ok){
+                alert('Submitted Succeefully')
+                e.target.reset()
+                fetchShortenedURL();
+              }
+
+            } catch (error) {
+                console.log("the error is:", error);
+                
+            }
+        })
+        fetchShortenedURL();
+        */
+    </script>
+</body>
+</html>
