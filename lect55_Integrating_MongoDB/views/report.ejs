@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <title>Document</title>
+</head>
+<body>
+    <section>
+    <%- include("header")%>
+    
+    <h1>Report Card of the students.</h1>
+    <ul>
+        <% student.map((stud)=> { %>
+            <li><%= stud.name %></li>
+            <li><%= stud.rollNo %></li>
+            <li><%= stud.branch %></li>
+            <li><%= stud.year %></li>
+            <li><%= stud.email %></li>
+        <% }) %>
+
+    </ul>
+    <p> <%= student.name %></p>
+    <p> <%= student.rollNo %></p>
+    <p> <%= student.branch %></p>
+    <p> <%= student.year %></p>
+    <p> <%= student.email %></p>
+    </section>
+</body>
+</html>

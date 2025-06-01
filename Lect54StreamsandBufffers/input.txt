@@ -1,0 +1,1 @@
+This is an example file and this is writing beccayse i need to pass these  data to the new file usin the streams andd al

@@ -302,9 +302,287 @@ Partials keep your templates DRY and make site-wide changes easier to manage.
 - **Controller**: Acts as an intermediary between the model and view. It handles user input, processes it, and updates the model or view accordingly. In Express, controllers are often implemented as route handlers that respond to HTTP requests.
 - **Routing**: Defines the endpoints and how they respond to client requests. In Express, routing is done using the `app.get()`, `app.post()`, etc., methods to define routes and their corresponding handlers.
 - **Middleware**: Functions that have access to the request and response objects, allowing you to modify the request, response, or perform actions before passing control to the next middleware or route handler. Middleware can be used for tasks like authentication, logging, and error handling.
-- **Error Handling**: In Express, you can define custom error-handling middleware to catch and handle errors that occur during request processing. This allows you to provide meaningful error messages and responses to clients.
-- **Static Files**: Express can serve static files (like images, CSS, and JavaScript) using the `express.static()` middleware. This allows you to easily manage and serve assets in your application.
-- **Session Management**: Express can manage user sessions using middleware like `express-session`, allowing you to store user-specific data across requests. This is useful for implementing features like user authentication and maintaining user state.
-- **Security**: Express provides various middleware and best practices to enhance the security of your application, such as input validation, sanitization, and protection against common web vulnerabilities like XSS and CSRF attacks.
-- **Testing**: Express applications can be tested using various testing frameworks like Mocha, Chai, or Jest. You can write unit tests for your routes, controllers, and middleware to ensure the functionality of your application.
 
+## MVC Implementation Example in Express.js
+
+Here's a concise example of MVC architecture in an Express application for a simple todo list:
+
+### Project Structure
+```
+/todo-app
+    /models
+        todo.js
+    /views
+        todo-list.ejs
+        add-todo.ejs
+    /controllers
+        todoController.js
+    server.js
+```
+
+### Model (models/todo.js)
+```javascript
+// Simple in-memory model (use MongoDB/Mongoose in production)
+const todos = [
+    { id: 1, title: 'Learn Express', completed: false },
+    { id: 2, title: 'Implement MVC', completed: true }
+];
+
+export default {
+    getAll: () => todos,
+    getById: (id) => todos.find(todo => todo.id === id),
+    create: (title) => {
+        const newTodo = { 
+            id: todos.length + 1, 
+            title, 
+            completed: false 
+        };
+        todos.push(newTodo);
+        return newTodo;
+    },
+    toggle: (id) => {
+        const todo = todos.find(t => t.id === id);
+        if (todo) todo.completed = !todo.completed;
+        return todo;
+    }
+};
+```
+
+### View (views/todo-list.ejs)
+```ejs
+<%- include('partials/header') %>
+<h1>Todo List</h1>
+<ul>
+    <% todos.forEach(todo => { %>
+        <li class="<%= todo.completed ? 'completed' : '' %>">
+            <%= todo.title %>
+            <a href="/todo/toggle/<%= todo.id %>">Toggle</a>
+        </li>
+    <% }); %>
+</ul>
+<a href="/todo/add">Add New Todo</a>
+<%- include('partials/footer') %>
+```
+
+### Controller (controllers/todoController.js)
+```javascript
+import Todo from '../models/todo.js';
+
+export default {
+    getAllTodos: (req, res) => {
+        const todos = Todo.getAll();
+        res.render('todo-list', { todos });
+    },
+    
+    showAddForm: (req, res) => {
+        res.render('add-todo');
+    },
+    
+    addTodo: (req, res) => {
+        const { title } = req.body;
+        Todo.create(title);
+        res.redirect('/todos');
+    },
+    
+    toggleTodo: (req, res) => {
+        const id = parseInt(req.params.id);
+        Todo.toggle(id);
+        res.redirect('/todos');
+    }
+};
+```
+
+### Main App (server.js)
+```javascript
+import express from 'express';
+import todoController from './controllers/todoController.js';
+
+const app = express();
+app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.get('/todos', todoController.getAllTodos);
+app.get('/todo/add', todoController.showAddForm);
+app.post('/todo/add', todoController.addTodo);
+app.get('/todo/toggle/:id', todoController.toggleTodo);
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+```
+
+This example demonstrates clear separation of:
+- **Model**: Data structure and operations
+- **View**: EJS templates for rendering
+- **Controller**: Request handlers that interact with models and views
+
+## RESTful APIs in Express
+
+REST (Representational State Transfer) is an architectural style for designing networked applications. RESTful APIs use HTTP requests to perform CRUD operations (Create, Read, Update, Delete) on resources.
+
+### Key Principles of REST
+
+1. **Stateless communication**: Each request contains all information needed
+2. **Resource-based**: Everything is a resource identified by URLs
+3. **Standard HTTP methods**: GET, POST, PUT, DELETE, etc.
+4. **Multiple representations**: Resources can be represented in different formats (JSON, XML)
+5. **Uniform interface**: Consistent way to interact with resources
+
+### HTTP Methods and CRUD Operations
+
+| HTTP Method | CRUD Operation | Description |
+|-------------|---------------|-------------|
+| GET         | Read          | Retrieve data |
+| POST        | Create        | Create new resources |
+| PUT/PATCH   | Update        | Modify existing resources (PUT replaces, PATCH updates parts) |
+| DELETE      | Delete        | Remove resources |
+
+### Express vs. Traditional JavaScript
+
+| Operation | Express REST API | Traditional JavaScript |
+|-----------|-----------------|------------------------|
+| Read data | `app.get('/users', ...)` | `const data = loadData()` |
+| Create data | `app.post('/users', ...)` | `array.push(newItem)` |
+| Update data | `app.put('/users/:id', ...)` | `array[index] = updatedItem` |
+| Delete data | `app.delete('/users/:id', ...)` | `array.splice(index, 1)` |
+
+### Simple REST API Example in Express
+
+```javascript
+import express from 'express';
+const app = express();
+app.use(express.json());
+
+// In-memory "database"
+let users = [
+    { id: 1, name: 'Alice', email: 'alice@example.com' },
+    { id: 2, name: 'Bob', email: 'bob@example.com' }
+];
+
+// GET all users
+app.get('/api/users', (req, res) => {
+    res.json(users);
+});
+
+// GET user by id
+app.get('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+});
+
+// POST new user
+app.post('/api/users', (req, res) => {
+    const { name, email } = req.body;
+    if (!name || !email) {
+        return res.status(400).json({ message: 'Name and email are required' });
+    }
+    
+    const newUser = {
+        id: users.length + 1,
+        name,
+        email
+    };
+    
+    users.push(newUser);
+    res.status(201).json(newUser);
+});
+
+// PUT (update) user
+app.put('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    
+    res.json(user);
+});
+
+// DELETE user
+app.delete('/api/users/:id', (req, res) => {
+    const index = users.findIndex(u => u.id === parseInt(req.params.id));
+    if (index === -1) return res.status(404).json({ message: 'User not found' });
+    
+    const deletedUser = users[index];
+    users.splice(index, 1);
+    
+    res.json(deletedUser);
+});
+
+app.listen(3000, () => {
+    console.log('REST API server running on port 3000');
+});
+```
+
+### Testing REST APIs
+
+You can test REST APIs using tools like:
+1. **Postman**: GUI tool for API testing
+2. **curl**: Command-line tool
+3. **axios/fetch**: JavaScript libraries for making HTTP requests
+
+Example curl commands:
+```bash
+# Get all users
+curl http://localhost:3000/api/users
+
+# Get specific user
+curl http://localhost:3000/api/users/1
+
+# Create user
+curl -X POST http://localhost:3000/api/users \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Charlie", "email":"charlie@example.com"}'
+
+# Update user
+curl -X PUT http://localhost:3000/api/users/3 \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Charles"}'
+
+# Delete user
+curl -X DELETE http://localhost:3000/api/users/3
+```
+
+---
+## Streams and Buffers in Node.js
+
+Streams and buffers are fundamental concepts in Node.js for handling data processing efficiently.
+
+### Buffers
+- **Purpose**: Store binary data in memory
+- **Use case**: When working with files, network operations
+- **Creation**: `Buffer.from()`, `Buffer.alloc()`
+
+```javascript
+// Create a buffer from a string
+const buf = Buffer.from('Hello World');
+console.log(buf); // <Buffer 48 65 6c 6c 6f 20 57 6f 72 6c 64>
+console.log(buf.toString()); // Hello World
+```
+
+### Streams
+- **Purpose**: Process data piece by piece (chunks)
+- **Benefits**: Memory efficiency, time efficiency for large data
+- **Types**: Readable, Writable, Duplex, Transform
+
+```javascript
+import fs from 'fs';
+
+// Read a file as a stream
+const readStream = fs.createReadStream('bigFile.txt');
+const writeStream = fs.createWriteStream('output.txt');
+
+// Pipe data from read stream to write stream
+readStream.pipe(writeStream);
+
+// Handle events
+readStream.on('data', (chunk) => {
+    console.log(`Received ${chunk.length} bytes of data`);
+});
+
+readStream.on('end', () => {
+    console.log('Finished reading file');
+});
+```
+
+Streams are particularly useful when dealing with large files that would be inefficient to load entirely into memory.
