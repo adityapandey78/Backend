@@ -89,8 +89,25 @@ export { data };
 
 ECMAScript handles top-level await by treating modules with top-level await as asynchronous modules in the dependency graph, ensuring proper execution order and dependency resolution.
    
-3.)  We have `import.meta.` moethods to get the current directory and file name.
----
+### Getting the Current Directory and File Name in ES Modules
+
+In ES modules, `__dirname` and `__filename` are not available by default as they are in CommonJS. Instead, you can use `import.meta.url` along with the `path` and `url` modules to get the current directory and file name:
+
+```javascript
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get the current file name
+const __filename = fileURLToPath(import.meta.url);
+
+// Get the current directory name
+const __dirname = path.dirname(__filename);
+
+console.log('Current file:', __filename);
+console.log('Current directory:', __dirname);
+```
+This approach is commonly used in modern Node.js projects that use ES modules.
+
 ## Route Parameters in Express  
 Route parameters are named URL segments that act as placeholders for values in the URL. They are defined in the route path using a colon (`:`) followed by the parameter name. When a request matches a route with parameters, the values are extracted and made available in the `req.params` object.
 Route parameters are useful for creating dynamic routes that can handle different values in the URL.

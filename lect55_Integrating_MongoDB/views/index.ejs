@@ -21,8 +21,19 @@
             <button type="submit">Shorten</button>
         </form>
         <h2>Shortended URL</h2>
-        <!-- <ul id="shortened-urls"></ul> no need as we weill be using the {{shortened-url}} -->
-         <ul>{{shortened_urls}}</ul>
+        <ul>
+            <% if (links && links.length > 0) { %>
+                <% links.forEach(function(link) { %>
+                    <li>
+                        <a href="/<%= link.shortCode %>" target="_blank">
+                            http://<%= link.host %>/<%= link.shortCode %>
+                        </a> → <%= link.url %>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <li>No shortened URLs yet</li>
+            <% } %>
+        </ul>
     </div>
     <!--No need of script as well-->
     <script>

@@ -1,6 +1,4 @@
 import crypto from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import { loadLinks,saveLinks } from "../models/shortner.model.js";
 
 
@@ -8,22 +6,14 @@ import { loadLinks,saveLinks } from "../models/shortner.model.js";
 
  export const getShortnerpage= async (req, res) => {
     try {
-
-        const file = await fs.readFile(path.join("views", "index.html"));
         const links = await loadLinks();
         console.log("Links:", links);
 
-        // Replace placeholder with the list of shortened URLs
-        const content = file.toString().replaceAll(
-            "{{shortened_urls}}",
-            Object.entries(links)
-                .map(
-                    ([shortCode, url]) =>
-                        `<li> <a href="/${shortCode}" target ="_blank">${req.host}/${shortCode} </a>-> ${url}</li>`
-                )
-                .join("")
-        );
-        return res.send(content);
+        // Render the EJS template with links data
+        const shortcodesList = Object.entries(links)
+            .map(([shortCode, url]) => ({ shortCode, url, host: req.get('host') }));
+        
+        return res.render('index', { links: shortcodesList });
     } catch (error) {
         console.error(error);
         return res.status(500).send("Internal Server Error in the app.get");
