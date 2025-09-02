@@ -1,0 +1,22 @@
+{
+  "name": "url-shortner-mysql",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "module",
+  "description": "URL Shortener application with MySQL integration",
+  "scripts": {
+    "dev": "node --watch app.js",
+    "start": "node app.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["url-shortener", "mysql", "nodejs", "express", "ejs"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.4",
+    "zod": "^4.1.1"
+  }
+}
