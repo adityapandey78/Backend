@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { loadLinks, saveLinks, getLinkByShortCode } from "../models/shortner.model.js";
+import { loadLinks, saveLinks, getLinkByShortCode } from "../services/shortner.services.js";
 
 /**
  * Render the homepage with all shortened links
@@ -13,12 +13,12 @@ export const getShortnerpage = async (req, res) => {
         console.log(`📊 Loaded ${links.length} links from database`);
         console.log("Raw links data:", JSON.stringify(links, null, 2));
 
-        // Convert MySQL result format to template-friendly format
+        // Convert Prisma result format to template-friendly format
         const shortcodesList = links.map(link => ({
-            shortCode: link.short_code,
-            url: link.url,
+            shortCode: link.shortCode,  // Prisma field name
+            url: link.url,              // Same field name
             host: req.get('host'),
-            id: link.id  // Use id instead of createdAt since that column doesn't exist
+            id: link.id                 // Same field name
         }));
         
         console.log("🎨 Processed shortcodes list:", JSON.stringify(shortcodesList, null, 2));
@@ -68,10 +68,10 @@ export const postShortner = async (req, res) => {
         }
 
         // Save the new URL mapping
-        console.log("💾 Saving new link to MySQL database...");
+        console.log("💾 Saving new link to MySQL database with Prisma...");
         const result = await saveLinks(finalShortCode, url);
         
-        console.log("✅ Save successful! Insert ID:", result.insertId);
+        console.log("✅ Save successful! New link:", result);
         console.log(`🎉 Successfully created: ${finalShortCode} -> ${url}`);
         
         return res.redirect("/");

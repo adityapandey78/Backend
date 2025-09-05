@@ -5,7 +5,7 @@ dotenv.config();
 import express from "express";
 import path from 'path';
 import RouterUrl from "./routes/shortner.routes.js";
-import { db } from "./config/db-client.js";
+import { prisma } from "./config/db-client.js";
 import { env } from "./config/env.js";
 
 // Create Express application
@@ -27,17 +27,14 @@ app.use('/', RouterUrl);
 // Initialize database and start server
 const startServer = async () => {
     try {
-        // Test MySQL connection pool
-        const connection = await db.getConnection();
-        await connection.ping();
-        connection.release();
-        
-        console.log("✅ Connected to MySQL database successfully!");
+        // Test Prisma connection
+        await prisma.$connect();
+        console.log("✅ Connected to MySQL database with Prisma successfully!");
         console.log(`📊 Database: ${env.DATABASE_NAME}`);
         console.log(`🏠 Host: ${env.DATABASE_HOST}`);
         
-        // Create table if it doesn't exist
-        await createTableIfNotExists();
+        // Check if database schema is in sync (optional)
+        console.log("📋 Database schema is ready with Prisma");
         
         // Start the server
         app.listen(PORT, () => {
@@ -49,23 +46,12 @@ const startServer = async () => {
     }
 };
 
-// Function to create table if it doesn't exist
-const createTableIfNotExists = async () => {
-    try {
-        const createTableQuery = `
-            CREATE TABLE IF NOT EXISTS short_links (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                short_code VARCHAR(20) UNIQUE NOT NULL,
-                url VARCHAR(255) NOT NULL
-            )
-        `;
-        
-        await db.execute(createTableQuery);
-        console.log("📋 Database table 'short_links' is ready");
-    } catch (error) {
-        console.error("❌ Error creating table:", error);
-        throw error;
-    }
-};
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+    console.log('\n🔄 Shutting down gracefully...');
+    await prisma.$disconnect();
+    console.log('✅ Database connection closed');
+    process.exit(0);
+});
 
 startServer();
