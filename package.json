@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^5.4.1",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.5",
     "eslint": "^9.25.0",
     "express": "^5.1.0",
     "mongodb": "^6.16.0",

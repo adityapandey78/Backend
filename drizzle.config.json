@@ -1,0 +1,8 @@
+{
+  "schema": "./lect70_Drizzle/models/schema.js",
+  "out": "./lect70_Drizzle/drizzle",
+  "dialect": "mysql",
+  "dbCredentials": {
+    "connectionString": "mysql://root:123456@localhost:3306/url_shortner_mysql"
+  }
+}
