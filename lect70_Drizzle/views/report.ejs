@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <title>Student Report - URL Shortener</title>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Student Report</h1>
+        
+        <div style="margin-bottom: 2rem;">
+            <a href="/" style="
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 600;
+                padding: 0.5rem 1rem;
+                background: rgba(102, 126, 234, 0.1);
+                border-radius: 25px;
+                transition: all 0.3s ease;
+            ">← Back to URL Shortener</a>
+        </div>
+
+        <h2>👥 Student Information</h2>
+        
+        <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+            <% student.forEach(function(stud, index) { %>
+                <div style="
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+                    padding: 1.5rem;
+                    border-radius: 15px;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                    border-left: 5px solid #667eea;
+                    transition: all 0.3s ease;
+                ">
+                    <h3 style="color: #333; margin-bottom: 1rem; font-size: 1.2rem;">
+                        🎓 Student #<%= index + 1 %>
+                    </h3>
+                    
+                    <div style="display: grid; gap: 0.5rem;">
+                        <div><strong>👤 Name:</strong> <%= stud.name %></div>
+                        <div><strong>🔢 Roll No:</strong> <code style="
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            color: white;
+                            padding: 0.2rem 0.5rem;
+                            border-radius: 10px;
+                            font-size: 0.9rem;
+                        "><%= stud.rollNo %></code></div>
+                        <div><strong>🏛️ Branch:</strong> <%= stud.branch %></div>
+                        <div><strong>📅 Year:</strong> <%= stud.year %></div>
+                        <div><strong>📧 Email:</strong> 
+                            <a href="mailto:<%= stud.email %>" style="color: #667eea; text-decoration: none;">
+                                <%= stud.email %>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <script>
+        // Add entrance animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('div[style*="background: linear-gradient"]');
+            cards.forEach((card, index) => {
+                if (card.style.background.includes('linear-gradient')) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 150);
+
+                    // Add hover effect
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-5px)';
+                        this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
+                    });
+
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0)';
+                        this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
