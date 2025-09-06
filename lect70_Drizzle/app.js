@@ -7,6 +7,8 @@ import path from 'path';
 import RouterUrl from "./routes/shortner.routes.js";
 import { db } from "./config/db-client.js";
 import { env } from "./config/env.js";
+import { authRoutes } from './routes/auth.routes.js';
+import { sql } from 'drizzle-orm';
 
 // Create Express application
 const app = express();
@@ -22,13 +24,14 @@ app.use(express.static("public")); // Serve static files from 'public' directory
 app.use(express.urlencoded({ extended: true })); // Parse form submissions
 
 // Use the router for handling requests
+app.use(authRoutes);
 app.use('/', RouterUrl);
 
 // Initialize database and start server
 const startServer = async () => {
     try {
-        // Test Drizzle connection
-        await db.execute("SELECT 1");
+        // Test Drizzle connection with a simple query
+        await db.execute(sql`SELECT 1 as test`);
         console.log("✅ Connected to MySQL database with Drizzle ORM successfully!");
         console.log(`📊 Database: ${env.DATABASE_NAME}`);
         console.log(`🏠 Host: ${env.DATABASE_HOST}`);
@@ -43,7 +46,6 @@ const startServer = async () => {
 };
 
 // Handle graceful shutdown
-
 process.on('SIGINT', async () => {
     console.log('\n🔄 Shutting down gracefully...');
     await db.end && db.end();

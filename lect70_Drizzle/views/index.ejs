@@ -4,12 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
-    <title>URL Shortener - MySQL Edition</title>
-    <meta name="description" content="Create short URLs with MySQL backend">
+    <link rel="stylesheet" href="./auth-styles.css">
+    <title>LinkSnip - URL Shortener</title>
+    <meta name="description" content="Create short URLs with LinkSnip - Fast, reliable URL shortening service">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/material-design-iconic-font@2.2.0/dist/css/material-design-iconic-font.min.css"
+    />
 </head>
 <body>
+    <%- include('./partials/header') %>
+    
     <div class="container">
-        <h1>🔗 URL Shortener</h1>
+        <h1>🔗 LinkSnip.</h1>
         
         <form action="/" method="post">
             <div>
@@ -43,6 +50,8 @@
             <% } %>
         </ul>
     </div>
+
+    <%- include('./partials/footer') %>
 
     <script>
         // Add smooth animations and interactions
