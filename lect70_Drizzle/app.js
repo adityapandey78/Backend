@@ -9,6 +9,7 @@ import { db } from "./config/db-client.js";
 import { env } from "./config/env.js";
 import { authRoutes } from './routes/auth.routes.js';
 import { sql } from 'drizzle-orm';
+import cookieParser from 'cookie-parser';
 
 // Create Express application
 const app = express();
@@ -23,6 +24,8 @@ app.set('views', path.join(process.cwd(), 'views'));
 app.use(express.static("public")); // Serve static files from 'public' directory
 app.use(express.urlencoded({ extended: true })); // Parse form submissions
 
+//setting up the cookie parser middleware
+app.use(cookieParser())
 // Use the router for handling requests
 app.use(authRoutes);
 app.use('/', RouterUrl);

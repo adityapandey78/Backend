@@ -15,6 +15,13 @@
       "when": 1757078123730,
       "tag": "0001_gifted_falcon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1757229588704,
+      "tag": "0002_gigantic_demogoblin",
+      "breakpoints": true
     }
   ]
 }

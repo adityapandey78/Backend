@@ -13,11 +13,15 @@ export const getShortnerpage = async (req, res) => {
         console.log(`📊 Loaded ${links.length} links from database`);
         console.log("Raw links data:", JSON.stringify(links, null, 2));
 
-        let isLoggedIn=req.headers.cookie;
+        /*let isLoggedIn=req.headers.cookie;
         isLoggedIn= Boolean(isLoggedIn
-                            ?.split(";")
+                           ?.split(";")
                             ?.find((cookie)=>cookie.trim().startsWith("isLoggedIn")) // isse bs useful data hi console hoga
                             ?.split("=")[1]);//isse bs true console hoga
+                            
+                            */
+        // instead of previous long code we can use just the cookie parser middleware
+        let isLoggedIn =req.cookies.isLoggedIn;
         console.log("getShortnerPage::::: IsLoggedIn::::",isLoggedIn);
         /**
          * <%# 
