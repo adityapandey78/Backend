@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./auth-styles.css">
+    <title>LinkSnip - URL Shortener</title>
+    <meta name="description" content="Create short URLs with LinkSnip - Fast, reliable URL shortening service">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/material-design-iconic-font@2.2.0/dist/css/material-design-iconic-font.min.css"
+    />
+</head>
+<body>
+    <%- include('./partials/header') %>
+    
+    <div class="container">
+        <h1>🔗 LinkSnip.</h1>
+        
+        <form action="/" method="post">
+            <div>
+                <label for="url">📝 Enter URL</label>
+                <input type="url" name="url" id="url" required placeholder="https://example.com">
+            </div>
+            <div>
+                <label for="shortCode">⚡ Short Code (optional)</label>
+                <input type="text" name="shortCode" id="shortCode" placeholder="Leave empty for random code">
+            </div>
+            <button type="submit">✨ Shorten URL</button>
+        </form>
+        
+        <h2>📋 Your Shortened URLs</h2>
+        <ul>
+            <% if (links && links.length > 0) { %>
+                <% links.forEach(function(link, index) { %>
+                    <li>
+                        <strong>📎 Short URL #<%= index + 1 %></strong>
+                        <code><%= link.shortCode %></code>
+                        <small>Original: <%= link.url %></small>
+                        <a href="/<%= link.shortCode %>" target="_blank">
+                            🔗 http://<%= link.host %>/<%= link.shortCode %>
+                        </a>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <li style="color: #666; font-style: italic; text-align: center;">
+                    🎯 No shortened URLs yet. Create your first one above! 👆
+                </li>
+            <% } %>
+        </ul>
+    </div>
+
+    <%- include('./partials/footer') %>
+
+    <script>
+        // Add smooth animations and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add animation to form elements
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.transform = 'scale(1.02)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Add click animation to button
+            const button = document.querySelector('button');
+            if (button) {
+                button.addEventListener('click', function(e) {
+                    // Create ripple effect
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        background: rgba(255, 255, 255, 0.5);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: ripple 0.6s ease-out;
+                        pointer-events: none;
+                    `;
+                    
+                    this.style.position = 'relative';
+                    this.style.overflow = 'hidden';
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            }
+
+            // Add copy to clipboard functionality
+            const shortLinks = document.querySelectorAll('ul li a');
+            shortLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        
+                        navigator.clipboard.writeText(this.href).then(() => {
+                            // Show copy success message
+                            const originalText = this.innerHTML;
+                            this.innerHTML = '✅ Copied!';
+                            this.style.background = 'rgba(76, 175, 80, 0.2)';
+                            
+                            setTimeout(() => {
+                                this.innerHTML = originalText;
+                                this.style.background = 'rgba(102, 126, 234, 0.1)';
+                            }, 2000);
+                        });
+                    }
+                });
+            });
+
+            // Add entrance animations to list items
+            const listItems = document.querySelectorAll('ul li');
+            listItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'all 0.5s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Add CSS animation for ripple effect
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+            
+            .container {
+                animation: fadeIn 0.8s ease-out;
+            }
+            
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
