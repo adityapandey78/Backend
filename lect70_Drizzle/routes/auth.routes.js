@@ -3,9 +3,15 @@ import * as authControllers from "../controllers/auth.controller.js"
 
 const router=Router();
 
-router.get("/register", authControllers.getRegisterPage);
+// router.get("/register", authControllers.getRegisterPage);
 // router.get("/login", authControllers.getLoginPage);
 //* Instead of using the individual login methods we can use the combined with the help of router functionality
+
+router
+      .route("/register")
+      .get(authControllers.getRegisterPage)
+      .post(authControllers.postRegister)
+
 
 router
       .route("/login")

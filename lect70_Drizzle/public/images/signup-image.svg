@@ -1,9 +1,0 @@
-<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="200" fill="#f0f9ff" rx="12"/>
-  <circle cx="150" cy="70" r="20" fill="#0ea5e9"/>
-  <rect x="130" y="95" width="40" height="25" rx="4" fill="#e0f2fe"/>
-  <rect x="125" y="130" width="50" height="6" rx="3" fill="#bae6fd"/>
-  <rect x="120" y="145" width="60" height="6" rx="3" fill="#7dd3fc"/>
-  <path d="M120 165 L150 180 L180 165" stroke="#0ea5e9" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <text x="150" y="195" text-anchor="middle" fill="#0369a1" font-family="Arial, sans-serif" font-size="12">Join Us Today</text>
-</svg>

@@ -3,20 +3,20 @@
  * Bcrypt has a limit of 72 characters, which means that if you hash a password with more than 72 characters, it will only hash the first 72 characters.
  */
 
-// import argon2 from "argon2";
-import bcrypt from "bcryptjs"; // There are two bcrypt package on npm repository.
+import argon2 from "argon2";
+// import bcrypt from "bcryptjs"; // There are two bcrypt package on npm repository.
 // One is bcryptjs and another is bcrypt. Both have same syntax, but bcrypt is faster than bcryptjs.
 // That's because bcrypt uses C++ implementation, and bcryptjs is a JavaScript implementation.
 // Bcryptjs can work on browsers too because it's a JavaScript implementation.
 
 async function hashPassword(password) {
-    // return argon2.hash(password);
-    return bcrypt.hash(password, 12);
+    return argon2.hash(password);
+    // return bcrypt.hash(password, 12);
 }
 
 async function verifyPassword(password, hashedPassword) {
-    // return argon2.verify(hashedPassword, password);
-    return bcrypt.compare(password, hashedPassword);
+    return argon2.verify(hashedPassword, password);
+    // return bcrypt.compare(password, hashedPassword);
 }
 
 // Change the length value to less than 72, and more than 72 to see the difference
