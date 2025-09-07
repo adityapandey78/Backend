@@ -13,6 +13,22 @@ export const getShortnerpage = async (req, res) => {
         console.log(`📊 Loaded ${links.length} links from database`);
         console.log("Raw links data:", JSON.stringify(links, null, 2));
 
+        let isLoggedIn=req.headers.cookie;
+        isLoggedIn= Boolean(isLoggedIn
+                            ?.split(";")
+                            ?.find((cookie)=>cookie.trim().startsWith("isLoggedIn")) // isse bs useful data hi console hoga
+                            ?.split("=")[1]);//isse bs true console hoga
+        console.log("getShortnerPage::::: IsLoggedIn::::",isLoggedIn);
+        /**
+         * <%# 
+        <% if(isLoggedIn){ %>
+        <h2>You are logged in</h2>
+        <%} else{ %>
+        <p>You are not logged in</p>
+        <%}%>
+        %> // I have used this in index.ejs to check with cookies if the user is logged in or not
+         */
+
         // Convert Drizzle result format to template-friendly format
         const shortcodesList = links.map(link => ({
             shortCode: link.shortCode,  // Drizzle field name
@@ -23,7 +39,10 @@ export const getShortnerpage = async (req, res) => {
         
         console.log("🎨 Processed shortcodes list:", JSON.stringify(shortcodesList, null, 2));
         console.log("🎨 Rendering homepage with shortcodes");
-        return res.render('index', { links: shortcodesList });
+        return res.render('index', { 
+            links: shortcodesList,
+           // isLoggedIn: isLoggedIn //passing the isLoggedin 
+        });
     } catch (error) {
         console.error("❌ Error in getShortnerpage:", error);
         return res.status(500).send("Internal Server Error while loading homepage");
