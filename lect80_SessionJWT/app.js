@@ -10,6 +10,7 @@ import { env } from "./config/env.js";
 import { authRoutes } from './routes/auth.routes.js';
 import { sql } from 'drizzle-orm';
 import cookieParser from 'cookie-parser';
+import { verifyAuthentication } from './middlewares/verify-auth.middleware.js';
 
 // Create Express application
 const app = express();
@@ -26,6 +27,21 @@ app.use(express.urlencoded({ extended: true })); // Parse form submissions
 
 //setting up the cookie parser middleware
 app.use(cookieParser())
+
+//middleware for verifying the JWT -- usually placed after cookie parser middleware
+app.use(verifyAuthentication );
+
+app.use((req,res,next)=>{
+    res.locals.user=req.user;
+    return next();
+});
+/**
+ * ! How it works:-
+ * this middleware runs on every request before reaching the route handlers
+ * ? res.local is an object that persists throughout the request-respose cycle
+ * if req.user exists (typically from auth) it is stored in res.local.user
+ *: Views (like EJS, Pug or handlebars) can directly access user without manually passing it in every route
+ */
 // Use the router for handling requests
 app.use(authRoutes);
 app.use('/', RouterUrl);

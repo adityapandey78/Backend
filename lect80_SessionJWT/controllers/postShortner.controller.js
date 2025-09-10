@@ -10,8 +10,10 @@ export const getShortnerpage = async (req, res) => {
         
         // Load all links from MySQL database
         const links = await loadLinks();
-        console.log(`📊 Loaded ${links.length} links from database`);
-        console.log("Raw links data:", JSON.stringify(links, null, 2));
+        console.log("Fetched all the link data successfully...");
+        
+        // console.log(`📊 Loaded ${links.length} links from database`);
+        // console.log("Raw links data:", JSON.stringify(links, null, 2));
 
         /*let isLoggedIn=req.headers.cookie;
         isLoggedIn= Boolean(isLoggedIn
@@ -20,9 +22,17 @@ export const getShortnerpage = async (req, res) => {
                             ?.split("=")[1]);//isse bs true console hoga
                             
                             */
-        // instead of previous long code we can use just the cookie parser middleware
-        let isLoggedIn =req.cookies.isLoggedIn;
+        // Check if user is logged in via JWT token
+        let isLoggedIn = false;
+        if (req.cookies && req.cookies.access_token) {
+            // If access_token exists, user is logged in
+            isLoggedIn = true;
+        }
+        // Alternative: Use req.user if you have the middleware applied
+        // let isLoggedIn = req.user ? true : false;
+        
         console.log("getShortnerPage::::: IsLoggedIn::::",isLoggedIn);
+        console.log("Available cookies:", req.cookies);
         /**
          * <%# 
         <% if(isLoggedIn){ %>
@@ -41,12 +51,19 @@ export const getShortnerpage = async (req, res) => {
             id: link.id
         }));
         
-        console.log("🎨 Processed shortcodes list:", JSON.stringify(shortcodesList, null, 2));
+        // console.log("🎨 Processed shortcodes list:", JSON.stringify(shortcodesList, null, 2));
         console.log("🎨 Rendering homepage with shortcodes");
-        return res.render('index', { 
+        const result = res.render('index', { 
             links: shortcodesList,
-           // isLoggedIn: isLoggedIn //passing the isLoggedin 
+            isLoggedIn: isLoggedIn //passing the isLoggedin 
         });
+        
+        console.log("📊 Rendered data:", {
+            //links: shortcodesList,
+            isLoggedIn: isLoggedIn
+        });
+        
+        return result;
     } catch (error) {
         console.error("❌ Error in getShortnerpage:", error);
         return res.status(500).send("Internal Server Error while loading homepage");

@@ -1,4 +1,4 @@
-import { getUserByEmail,createUser, hashPassword, comparePassword } from "../services/auth.services.js";
+import { getUserByEmail,createUser, hashPassword, comparePassword ,generateToken} from "../services/auth.services.js";
 
 export const getRegisterPage=(req,res)=>{
     return res.render("../views/auth/register")
@@ -43,10 +43,17 @@ export const postLogin=async (req,res)=>{
         return res.redirect("/login");
     }
 
-    //    res.setHeader("Set-Cookie","isLoggedIn=true; path=/;"); //previous code but will use optmised one
+   const token= generateToken({
+    id:user.id,
+    name:user.name,
+    email:user.email,
+  });
 
-    res.cookie("isLoggedIn",true);
-   //The above is the method of setting up the login
+  res.cookie("access_token",token);
     res.redirect("/");
 }
 
+export const getMe= (req,res)=>{
+    if(!req.user) return res.send("Not logged in");
+    return res.send(`<h1> hey ${req.user.name} - ${req.user.email}</h1>`)
+};

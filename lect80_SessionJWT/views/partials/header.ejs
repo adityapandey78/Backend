@@ -11,13 +11,13 @@
       <a href="#section4">Contact</a>
 
       <!-- User authentication - commented until backend is ready -->
-      <!-- <% if (typeof user !== 'undefined' && user) { %> -->
-        <!-- <a href="/profile">Profile</a> -->
-        <!-- <a href="/logout">Logout</a> -->
-      <!-- <% } else { %> -->
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a href="/profile">Profile</a>
+        <a href="/logout">Logout</a>
+      <% } else { %>
         <a href="/login">Login</a>
         <a href="/register">Register</a>
-      <!-- <% } %> -->
+      <% } %>
     </nav>
   </div>
 </header>
