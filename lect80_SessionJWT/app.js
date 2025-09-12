@@ -11,6 +11,8 @@ import { authRoutes } from './routes/auth.routes.js';
 import { sql } from 'drizzle-orm';
 import cookieParser from 'cookie-parser';
 import { verifyAuthentication } from './middlewares/verify-auth.middleware.js';
+import session from 'express-session';
+import flash from 'connect-flash';
 
 // Create Express application
 const app = express();
@@ -27,6 +29,15 @@ app.use(express.urlencoded({ extended: true })); // Parse form submissions
 
 //setting up the cookie parser middleware
 app.use(cookieParser())
+
+//session ke middleware ko cookieParser ke baad and auth ke pehle rakho
+app.use(session({
+    secret:'my-secret',
+    resave:true,
+    saveUninitialized:false
+}))
+//for flash messages
+app.use(flash());
 
 //middleware for verifying the JWT -- usually placed after cookie parser middleware
 app.use(verifyAuthentication );

@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1757077881362,
-      "tag": "0000_tearful_firedrake",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1757078123730,
-      "tag": "0001_gifted_falcon",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1757229588704,
-      "tag": "0002_gigantic_demogoblin",
+      "when": 1757575036935,
+      "tag": "0000_ordinary_mentallo",
       "breakpoints": true
     }
   ]

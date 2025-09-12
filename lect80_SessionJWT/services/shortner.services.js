@@ -3,9 +3,20 @@ import { eq, desc } from 'drizzle-orm';
 import { short_links } from '../drizzle/schema.js';
 
 // Get all links, newest first
-export const loadLinks = async () => {
+export const loadLinks = async (userId) => {
     try {
-        const rows = await db.select().from(short_links).orderBy(desc(short_links.id));
+        let query = db
+                    .select()
+                    .from(short_links)
+                    .where(eq(short_links.userId,userId))
+                    .orderBy(desc(short_links.id));
+        
+        // // If userId is provided, filter by user
+        // if (userId) {
+        //     query = query.where(eq(short_links.userId, userId));
+        // }
+        
+        const rows = await query;
         return rows;
     } catch (error) {
         console.error("Error loading links from database:", error);
@@ -25,9 +36,13 @@ export const getLinkByShortCode = async (shortCode) => {
 };
 
 // Save a new short link
-export const saveLinks = async (shortCode, url) => {
+export const saveLinks = async (shortCode, url, userId) => {
     try {
-        const result = await db.insert(short_links).values({ shortCode, url });
+        const result = await db.insert(short_links).values({ 
+            shortCode, 
+            url, 
+            userId 
+        });
         return result;
     } catch (error) {
         console.error("Error saving link to database:", error);

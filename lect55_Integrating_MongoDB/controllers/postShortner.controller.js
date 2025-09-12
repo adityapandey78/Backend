@@ -6,15 +6,16 @@ import { loadLinks,saveLinks, getLinkByShortCode } from "../models/shortner.mode
 
  export const getShortnerpage= async (req, res) => {
     try {
-        console.log("Loading homepage, fetching links...");
-        const links = await loadLinks();
-        console.log("Links loaded:", links);
+        //console.log("Loading homepage, fetching links...");
+        if(!req.user) return res.redirect("/login");
+        const links = await loadLinks(req.user.id);
+        //console.log("Links loaded:", links);
 
         // Render the EJS template with links data
         const shortcodesList = Object.entries(links)
             .map(([shortCode, url]) => ({ shortCode, url, host: req.get('host') }));
         
-        console.log("Rendering page with shortcodes:", shortcodesList);
+        //console.log("Rendering page with shortcodes:", shortcodesList);
         return res.render('index', { links: shortcodesList });
     } catch (error) {
         console.error("Error in getShortnerpage:", error);

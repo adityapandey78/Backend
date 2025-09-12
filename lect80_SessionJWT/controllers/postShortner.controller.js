@@ -8,8 +8,9 @@ export const getShortnerpage = async (req, res) => {
     try {
         console.log("🏠 Loading homepage, fetching links...");
         
-        // Load all links from MySQL database
-        const links = await loadLinks();
+        // Load links for the current user if logged in, otherwise show all links
+        const userId = req.user ? req.user.id : null;
+        const links = await loadLinks(userId);
         console.log("Fetched all the link data successfully...");
         
         // console.log(`📊 Loaded ${links.length} links from database`);
@@ -79,6 +80,12 @@ export const postShortner = async (req, res) => {
         
         const { url, shortCode } = req.body;
         
+        // Check if user is authenticated
+        if (!req.user) {
+            req.flash("errors", "You must be logged in to create short links");
+            return res.redirect("/login");
+        }
+        
         // Validate URL
         if (!url || !url.trim()) {
             console.log("❌ URL is required");
@@ -108,8 +115,9 @@ export const postShortner = async (req, res) => {
         }
 
         // Save the new URL mapping
-        console.log("💾 Saving new link to MySQL database with Prisma...");
-        const result = await saveLinks(finalShortCode, url);
+        console.log("💾 Saving new link to MySQL database with Drizzle...");
+        console.log("🔍 User ID:", req.user.id);
+        const result = await saveLinks(finalShortCode, url, req.user.id);
         
         console.log("✅ Save successful! New link:", result);
         console.log(`🎉 Successfully created: ${finalShortCode} -> ${url}`);
