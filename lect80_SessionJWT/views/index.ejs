@@ -45,6 +45,11 @@
             placeholder="Leave empty for random code"
           />
         </div>
+        <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+          <% errors.forEach((error) => { %>
+            <p class="flash-error"><%= typeof error === 'string' ? error : JSON.stringify(error) %></p>
+          <% }); %>
+        <% } %>
         <button type="submit">✨ Shorten URL</button>
       </form>
 

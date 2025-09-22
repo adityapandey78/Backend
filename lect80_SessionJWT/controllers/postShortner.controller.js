@@ -1,48 +1,21 @@
 import crypto from "crypto";
 import { loadLinks, saveLinks, getLinkByShortCode } from "../services/shortner.services.js";
+import { shortnerSchema } from "../validators/shortner-validator.js";
 
 /**
  * Render the homepage with all shortened links
  */
 export const getShortnerpage = async (req, res) => {
     try {
-        console.log("🏠 Loading homepage, fetching links...");
-        
         // Load links for the current user if logged in, otherwise show all links
         const userId = req.user ? req.user.id : null;
         const links = await loadLinks(userId);
-        console.log("Fetched all the link data successfully...");
         
-        // console.log(`📊 Loaded ${links.length} links from database`);
-        // console.log("Raw links data:", JSON.stringify(links, null, 2));
-
-        /*let isLoggedIn=req.headers.cookie;
-        isLoggedIn= Boolean(isLoggedIn
-                           ?.split(";")
-                            ?.find((cookie)=>cookie.trim().startsWith("isLoggedIn")) // isse bs useful data hi console hoga
-                            ?.split("=")[1]);//isse bs true console hoga
-                            
-                            */
         // Check if user is logged in via JWT token
         let isLoggedIn = false;
         if (req.cookies && req.cookies.access_token) {
-            // If access_token exists, user is logged in
             isLoggedIn = true;
         }
-        // Alternative: Use req.user if you have the middleware applied
-        // let isLoggedIn = req.user ? true : false;
-        
-        console.log("getShortnerPage::::: IsLoggedIn::::",isLoggedIn);
-        console.log("Available cookies:", req.cookies);
-        /**
-         * <%# 
-        <% if(isLoggedIn){ %>
-        <h2>You are logged in</h2>
-        <%} else{ %>
-        <p>You are not logged in</p>
-        <%}%>
-        %> // I have used this in index.ejs to check with cookies if the user is logged in or not
-         */
 
         // Convert Drizzle result format to template-friendly format
         const shortcodesList = links.map(link => ({
@@ -52,16 +25,10 @@ export const getShortnerpage = async (req, res) => {
             id: link.id
         }));
         
-        // console.log("🎨 Processed shortcodes list:", JSON.stringify(shortcodesList, null, 2));
-        console.log("🎨 Rendering homepage with shortcodes");
         const result = res.render('index', { 
             links: shortcodesList,
-            isLoggedIn: isLoggedIn //passing the isLoggedin 
-        });
-        
-        console.log("📊 Rendered data:", {
-            //links: shortcodesList,
-            isLoggedIn: isLoggedIn
+            isLoggedIn: isLoggedIn,
+            errors: req.flash("errors")
         });
         
         return result;
@@ -77,7 +44,6 @@ export const getShortnerpage = async (req, res) => {
 export const postShortner = async (req, res) => {
     try {
         console.log("📝 POST request received:", req.body);
-        
         const { url, shortCode } = req.body;
         
         // Check if user is authenticated
@@ -86,57 +52,55 @@ export const postShortner = async (req, res) => {
             return res.redirect("/login");
         }
         
-        // Validate URL
-        if (!url || !url.trim()) {
-            console.log("❌ URL is required");
-            return res.status(400).send("URL is required");
+        console.log("🔍 Validating with Zod:", { url, shortcode: shortCode });
+        // Zod validation - map shortCode to shortcode for schema
+        const validation = shortnerSchema.safeParse({ url, shortcode: shortCode });
+        if (!validation.success) {
+            console.log("❌ Validation failed:", validation.error.issues);
+            
+            // Simple error extraction - just get the messages
+            const errorMessages = validation.error.issues.map(issue => issue.message);
+            console.log("📋 Error messages:", errorMessages);
+            
+            // Flash each error message
+            errorMessages.forEach(message => req.flash("errors", message));
+            return res.redirect("/");
         }
 
+        console.log("✅ Validation passed");
         // Generate random short code if not provided
         const finalShortCode = shortCode && shortCode.trim() 
             ? shortCode.trim() 
             : crypto.randomBytes(4).toString("hex");
         
-        console.log(`🔄 Processing: URL=${url}, ShortCode=${finalShortCode}`);
+        console.log("🔗 Final shortcode:", finalShortCode);
         
         // Check if short code already exists
-        console.log("🔍 Checking for existing shortcode...");
         const existingLink = await getLinkByShortCode(finalShortCode);
         
         if (existingLink) {
-            console.log("⚠️ Shortcode already exists:", existingLink);
-            return res.status(400).send(`
-                <div style="text-align: center; margin-top: 50px;">
-                    <h2>❌ Short code already exists!</h2>
-                    <p>The short code "${finalShortCode}" is already in use.</p>
-                    <a href="/" style="color: #007bff;">← Go Back</a>
-                </div>
-            `);
+            console.log("⚠️ Shortcode already exists");
+            req.flash("errors", "URL with that shortcode already exists, Please choose another");
+            return res.redirect("/");
         }
 
+        console.log("💾 Saving to database...");
         // Save the new URL mapping
-        console.log("💾 Saving new link to MySQL database with Drizzle...");
-        console.log("🔍 User ID:", req.user.id);
-        const result = await saveLinks(finalShortCode, url, req.user.id);
+        await saveLinks(finalShortCode, url, req.user.id);
         
-        console.log("✅ Save successful! New link:", result);
-        console.log(`🎉 Successfully created: ${finalShortCode} -> ${url}`);
-        
+        console.log("✅ Successfully saved");
         return res.redirect("/");
     } catch (error) {
         console.error("❌ Error creating short URL:", error);
+        console.error("❌ Error stack:", error.stack);
         
         if (error.message === 'Short code already exists') {
-            return res.status(400).send(`
-                <div style="text-align: center; margin-top: 50px;">
-                    <h2>❌ Duplicate short code!</h2>
-                    <p>This short code is already taken. Please choose another.</p>
-                    <a href="/" style="color: #007bff;">← Go Back</a>
-                </div>
-            `);
+            req.flash("errors", "This short code is already taken. Please choose another.");
+            return res.redirect("/");
         }
         
-        return res.status(500).send("Internal Server Error while creating short URL");
+        req.flash("errors", `Internal Server Error: ${error.message}`);
+        return res.redirect("/");
     }
 };
 
@@ -146,13 +110,11 @@ export const postShortner = async (req, res) => {
 export const redirectShortCode = async (req, res) => {
     try {
         const { shortcode } = req.params;
-        console.log(`🔗 Redirect request for short code: ${shortcode}`);
         
         // Find the link by short code
         const link = await getLinkByShortCode(shortcode);
         
         if (!link) {
-            console.log("❌ Short code not found:", shortcode);
             return res.status(404).send(`
                 <div style="text-align: center; margin-top: 50px;">
                     <h2>404 - Not Found</h2>
@@ -162,7 +124,6 @@ export const redirectShortCode = async (req, res) => {
             `);
         }
 
-        console.log(`✅ Redirecting ${shortcode} -> ${link.url}`);
         return res.redirect(link.url);
     } catch (error) {
         console.error("❌ Error in redirectShortCode:", error);
