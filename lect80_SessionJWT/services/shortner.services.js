@@ -27,7 +27,9 @@ export const loadLinks = async (userId) => {
 // Find a link by its short code
 export const getLinkByShortCode = async (shortCode) => {
     try {
-        const rows = await db.select().from(short_links).where(eq(short_links.shortCode, shortCode));
+        const rows = await db.select()
+                             .from(short_links)
+                             .where(eq(short_links.shortCode, shortCode));
         return rows[0] || null;
     } catch (error) {
         console.error("Error finding link by short code:", error);
@@ -52,3 +54,32 @@ export const saveLinks = async (shortCode, url, userId) => {
         throw error;
     }
 };
+
+export const findShortLinkById= async(id)=>{
+    try {
+        const rows = await db.select()
+                         .from(short_links)
+                         .where(eq(short_links.id, id));
+        return rows[0] || null;
+    } catch (error) {
+        console.error("Error geting the shortlink by id",error)
+        return null;
+    }
+    
+}
+
+// Update a short link by ID
+export const updateShortLinkById = async (id, url, shortCode, userId) => {
+    try {
+        const result = await db.update(short_links)
+                              .set({ url, shortCode })
+                              .where(eq(short_links.id, id));
+        return result;
+    } catch (error) {
+        console.error("Error updating short link:", error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            throw new Error('Short code already exists');
+        }
+        throw error;
+    }
+}

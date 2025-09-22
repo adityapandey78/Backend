@@ -1,5 +1,6 @@
 import crypto from "crypto";
-import { loadLinks, saveLinks, getLinkByShortCode } from "../services/shortner.services.js";
+import z from "zod";
+import { loadLinks, saveLinks, getLinkByShortCode, findShortLinkById, updateShortLinkById } from "../services/shortner.services.js";
 import { shortnerSchema } from "../validators/shortner-validator.js";
 
 /**
@@ -130,3 +131,89 @@ export const redirectShortCode = async (req, res) => {
         return res.status(500).send("Internal Server Error while redirecting");
     }
 };
+// getShortenerEditPage
+export const getShortenerEditPage= async(req,res)=>{
+    // const id=req.params;
+    if(!req.user) return res.redirect("/login");
+
+    const {data:id,error}=z.coerce.number().int().safeParse(req.params.id);
+    if(error) return res.redirect("/404");
+
+    try {
+        const shortLink= await findShortLinkById(id);
+        if(!shortLink) return res.redirect("/404");
+
+        res.render("edit-shortLink",{
+            id:shortLink.id,
+            url:shortLink.url,
+            shortCode:shortLink.shortCode,
+            error:req.flash("errors"),
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Internal Server Error! edit page failed")
+    }
+}
+
+// Update short link
+export const updateShortLink = async (req, res) => {
+    try {
+        if (!req.user) {
+            req.flash("errors", "You must be logged in to update short links");
+            return res.redirect("/login");
+        }
+
+        const { data: id, error: idError } = z.coerce.number().int().safeParse(req.params.id);
+        if (idError) {
+            req.flash("errors", "Invalid link ID");
+            return res.redirect("/");
+        }
+
+        const { url, shortCode } = req.body;
+        
+        // Validate both URL and shortCode with Zod
+        const validation = shortnerSchema.safeParse({ url, shortcode: shortCode });
+        if (!validation.success) {
+            const errorMessages = validation.error.issues.map(issue => issue.message);
+            errorMessages.forEach(message => req.flash("errors", message));
+            return res.redirect(`/edit/${id}`);
+        }
+
+        // Check if the link exists and belongs to the user
+        const existingLink = await findShortLinkById(id);
+        if (!existingLink) {
+            req.flash("errors", "Short link not found");
+            return res.redirect("/");
+        }
+
+        if (existingLink.userId !== req.user.id) {
+            req.flash("errors", "You can only edit your own links");
+            return res.redirect("/");
+        }
+
+        // Check if the new shortcode already exists (if it's different from current)
+        if (shortCode !== existingLink.shortCode) {
+            const duplicateLink = await getLinkByShortCode(shortCode);
+            if (duplicateLink && duplicateLink.id !== id) {
+                req.flash("errors", "Short code already exists, please choose another");
+                return res.redirect(`/edit/${id}`);
+            }
+        }
+
+        // Update the link
+        await updateShortLinkById(id, url, shortCode, req.user.id);
+        
+        console.log(`✅ Successfully updated link ${id}: ${shortCode} -> ${url}`);
+        return res.redirect("/");
+    } catch (error) {
+        console.error("❌ Error updating short link:", error);
+        
+        if (error.message === 'Short code already exists') {
+            req.flash("errors", "Short code already exists, please choose another");
+            return res.redirect(`/edit/${req.params.id}`);
+        }
+        
+        req.flash("errors", "Internal Server Error while updating short link");
+        return res.redirect("/");
+    }
+}
