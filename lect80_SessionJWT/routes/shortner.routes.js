@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postShortner, getShortnerpage, redirectShortCode, getShortenerEditPage, updateShortLink } from "../controllers/postShortner.controller.js"; 
+import { postShortner, getShortnerpage, redirectShortCode, getShortenerEditPage, updateShortLink ,deletShortCode} from "../controllers/postShortner.controller.js"; 
 
 // Create router instance
 const router = Router();
@@ -25,4 +25,5 @@ router.route("/edit/:id")
     .get(getShortenerEditPage)
     .post(updateShortLink);
 
+    router.route("/delete/:id").post(deletShortCode);
 export default router;

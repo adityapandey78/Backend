@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import z from "zod";
-import { loadLinks, saveLinks, getLinkByShortCode, findShortLinkById, updateShortLinkById } from "../services/shortner.services.js";
+import { loadLinks, saveLinks, getLinkByShortCode, findShortLinkById, updateShortLinkById,deleteShortCodeById } from "../services/shortner.services.js";
 import { shortnerSchema } from "../validators/shortner-validator.js";
 
 /**
@@ -215,5 +215,26 @@ export const updateShortLink = async (req, res) => {
         
         req.flash("errors", "Internal Server Error while updating short link");
         return res.redirect("/");
+    }
+}
+
+//Delete the ShortCode
+export const deletShortCode = async (req,res)=>{
+    try {
+        // const id=req.params;
+    if(!req.user) return res.redirect("/login");
+
+    const {data:id,error}=z.coerce
+                            .number()
+                            .int()
+                            .safeParse(req.params.id);
+    if(error) return res.redirect("/404");
+
+    await deleteShortCodeById(id)
+
+    return res.redirect("/");
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Internal Server Error! edit page failed")
     }
 }

@@ -83,3 +83,19 @@ export const updateShortLinkById = async (id, url, shortCode, userId) => {
         throw error;
     }
 }
+
+//Delete Short code by ID
+export const deleteShortCodeById=async(id)=>{
+    try {
+        const delRes= await db.delete(short_links)
+                        .where(eq(short_links.id,id))
+        console.log("Link deleted successfully");
+        return delRes;
+        
+        
+    } catch (error) {
+        console.error(error);
+        console.error("Error deleting the link!");
+        
+    }
+}
