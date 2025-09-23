@@ -1,0 +1,37 @@
+{
+  "name": "url-shortner-mysql",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "module",
+  "description": "URL Shortener application with MySQL integration",
+  "scripts": {
+    "dev": "node --watch app.js",
+    "test": "node --env-file=.env app.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "keywords": [
+    "url-shortener",
+    "mysql",
+    "nodejs",
+    "express",
+    "ejs"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "bcryptjs": "^3.0.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.1",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.5",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "mysql2": "^3.14.4",
+    "zod": "^4.1.6"
+  }
+}
