@@ -3,16 +3,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from "express";
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import flash from 'connect-flash';
+import requestIp from "request-ip";
+
 import path from 'path';
 import RouterUrl from "./routes/shortner.routes.js";
 import { db } from "./config/db-client.js";
 import { env } from "./config/env.js";
 import { authRoutes } from './routes/auth.routes.js';
 import { sql } from 'drizzle-orm';
-import cookieParser from 'cookie-parser';
 import { verifyAuthentication } from './middlewares/verify-auth.middleware.js';
-import session from 'express-session';
-import flash from 'connect-flash';
 
 // Create Express application
 const app = express();
@@ -39,6 +41,8 @@ app.use(session({
 //for flash messages
 app.use(flash());
 
+// package for getting the ip of the user
+app.use(requestIp.mw())
 //middleware for verifying the JWT -- usually placed after cookie parser middleware
 app.use(verifyAuthentication );
 
@@ -61,10 +65,10 @@ app.use('/', RouterUrl);
 const startServer = async () => {
     try {
         // Test Drizzle connection with a simple query
-        await db.execute(sql`SELECT 1 as test`);
-        console.log("✅ Connected to MySQL database with Drizzle ORM successfully!");
-        console.log(`📊 Database: ${env.DATABASE_NAME}`);
-        console.log(`🏠 Host: ${env.DATABASE_HOST}`);
+        // await db.execute(sql`SELECT 1 as test`);
+        // console.log("✅ Connected to MySQL database with Drizzle ORM successfully!");
+        // console.log(`📊 Database: ${env.DATABASE_NAME}`);
+        // console.log(`🏠 Host: ${env.DATABASE_HOST}`);
         // Start the server
         app.listen(PORT, () => {
             console.log(`🚀 Server running at http://localhost:${PORT}`);

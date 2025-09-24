@@ -1,4 +1,14 @@
-import { getUserByEmail,createUser, hashPassword, comparePassword ,generateToken} from "../services/auth.services.js";
+import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from "../config/constants.js";
+import { 
+    getUserByEmail,
+    createUser, 
+    hashPassword, 
+    comparePassword ,
+    // generateToken == no need now, will use dual auth
+    createSession,
+    createAccessToken,
+    createRefreshToken
+} from "../services/auth.services.js";
 import { loginUserSchema, registerUserSchema } from "../validators/auth-validator.js";
 
 export const getRegisterPage=(req,res)=>{
@@ -71,14 +81,43 @@ export const postLogin=async (req,res)=>{
         return res.redirect("/login");
     }
 
-   const token= generateToken({
+//    const token= generateToken({
+//     id:user.id,
+//     name:user.name,
+//     email:user.email,
+//   });
+
+//   res.cookie("access_token",token);
+//The above method was used only for the JWT thingy 
+
+//: Steps for the dual sessions
+// 1: Creating a session
+ const session = await createSession(user.id,{
+    ip:req.clientIp,
+    userAgent:req.headers["user-agent"],
+ });
+
+ const accessToken= createAccessToken({
     id:user.id,
     name:user.name,
     email:user.email,
-  });
+    sessionId:session.id,
+ });
+ const refreshToken= createRefreshToken({sessionId:session.id});
 
-  res.cookie("access_token",token);
-    res.redirect("/");
+const baseConfig ={httpOnly:true,secure:true}; // for the sale of ease, declaring a var here and will use in both the functions
+
+res.cookie("access_token",accessToken,{
+    ...baseConfig,
+    maxAge:ACCESS_TOKEN_EXPIRY,
+});
+
+res.cookie("refresh_token",refreshToken,{
+    ...baseConfig,
+    maxAge:REFRESH_TOKEN_EXPIRY,
+});
+
+res.redirect("/");
 }
 
 export const getMe= (req,res)=>{
