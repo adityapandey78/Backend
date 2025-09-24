@@ -8,6 +8,13 @@
       "when": 1757575036935,
       "tag": "0000_ordinary_mentallo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1758708297930,
+      "tag": "0001_conscious_wrecker",
+      "breakpoints": true
     }
   ]
 }
