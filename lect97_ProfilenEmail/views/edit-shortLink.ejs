@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>Edit Short Link - LinkSnip</title>
+    <meta
+      name="description"
+      content="Create short URLs with LinkSnip - Fast, reliable URL shortening service"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/material-design-iconic-font@2.2.0/dist/css/material-design-iconic-font.min.css"
+    />
+  </head>
+  <body class="edit-page-body">
+    <%- include('./partials/header') %> 
+   
+    <div class="edit-container">
+      <h1 class="edit-header">✏️ Edit Short Link</h1>
+
+      <form action="/edit/<%= typeof id !== 'undefined' ? id : '' %>" method="post" class="edit-form">
+        <div class="form-group">
+          <label for="url">📝 Website URL</label>
+          <input
+            type="url"
+            name="url"
+            id="url"
+            value="<%= typeof url !== 'undefined' ? url : '' %>"
+            required
+            placeholder="https://example.com"
+          />
+        </div>
+        <div class="form-group">
+          <label for="shortCode">⚡ Custom Short Code</label>
+          <input
+            type="text"
+            name="shortCode"
+            id="shortCode"
+            value="<%= typeof shortCode !== 'undefined' ? shortCode : '' %>"
+            required
+            placeholder="Enter custom short code"
+          />
+          <div class="warning-text">
+            ⚠️ Changing the short code will break existing links
+          </div>
+        </div>
+        
+        <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+          <% error.forEach((err) => { %>
+            <div class="flash-error">
+              <%= typeof err === 'string' ? err : JSON.stringify(err) %>
+            </div>
+          <% }); %>
+        <% } %>
+        
+        <button type="submit" class="submit-btn">✨ Update Short Link</button>
+      </form>
+
+      <a href="/" class="back-link">Back to Home</a>
+    </div>
+
+    <%- include('./partials/footer') %>
+
+  </body>
+</html>
