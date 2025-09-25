@@ -98,7 +98,7 @@ export const refreshTokens = async (refreshToken) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      sessionId: currentSession.id, // Fixed typo: was 'sessionsId'
+      sessionId: currentSession.id, 
     };
 
     //creating the tokens
@@ -116,3 +116,10 @@ export const refreshTokens = async (refreshToken) => {
     throw error; // Re-throw the error so middleware can handle it
   }
 };
+
+//clearing the session post logout
+export const clearSession=async(sessionId)=>{
+  return db.delete(sessionsTable)
+            .where(eq(sessionsTable.id,sessionId));
+            
+}

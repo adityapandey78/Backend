@@ -7,7 +7,8 @@ import {
     // generateToken == no need now, will use dual auth
     createSession,
     createAccessToken,
-    createRefreshToken
+    createRefreshToken,
+    clearSession
 } from "../services/auth.services.js";
 import { loginUserSchema, registerUserSchema } from "../validators/auth-validator.js";
 
@@ -125,7 +126,10 @@ export const getMe= (req,res)=>{
     return res.send(`<h1> hey ${req.user.name} - ${req.user.email}</h1>`)
 };
 
-export const logoutUser= (req,res)=>{
+export const logoutUser= async (req,res)=>{
+    await clearSession(req.user.sessionId)
+
     res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
     res.redirect('/login');
 }
