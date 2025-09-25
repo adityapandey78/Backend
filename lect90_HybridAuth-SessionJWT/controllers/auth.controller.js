@@ -8,7 +8,8 @@ import {
     createSession,
     createAccessToken,
     createRefreshToken,
-    clearSession
+    clearSession,
+    authenticateUser
 } from "../services/auth.services.js";
 import { loginUserSchema, registerUserSchema } from "../validators/auth-validator.js";
 
@@ -45,30 +46,8 @@ export const postRegister= async (req,res)=>{
     
     // res.redirect("/login");// no need to redirect to login, we are implementing the direct login after registration
 
-    const session = await createSession(user.id,{
-        ip:req.clientIp,
-        userAgent:req.headers["user-agent"],
-    });
-
-    const accessToken= createAccessToken({
-        id:user.id,
-        name:name, //ye hum data se le lenge that's why user.name ni likha
-        email:email,
-        sessionId:session.id,
-    });
-    const refreshToken= createRefreshToken({sessionId:session.id});
-
-    const baseConfig ={httpOnly:true,secure:true}; // for the sale of ease, declaring a var here and will use in both the functions
-
-    res.cookie("access_token",accessToken,{
-        ...baseConfig,
-        maxAge:ACCESS_TOKEN_EXPIRY,
-    });
-
-    res.cookie("refresh_token",refreshToken,{
-        ...baseConfig,
-        maxAge:REFRESH_TOKEN_EXPIRY,
-    });
+  await  authenticateUser({req, res, user, name, email});
+   
 
     res.redirect("/");
     
@@ -118,33 +97,34 @@ export const postLogin=async (req,res)=>{
 //   res.cookie("access_token",token);
 //The above method was used only for the JWT thingy 
 
-//: Steps for the dual sessions
-// 1: Creating a session
- const session = await createSession(user.id,{
-    ip:req.clientIp,
-    userAgent:req.headers["user-agent"],
- });
+// //: Steps for the dual sessions
+// // 1: Creating a session
+//  const session = await createSession(user.id,{
+//     ip:req.clientIp,
+//     userAgent:req.headers["user-agent"],
+//  });
 
- const accessToken= createAccessToken({
-    id:user.id,
-    name:user.name,
-    email:user.email,
-    sessionId:session.id,
- });
- const refreshToken= createRefreshToken({sessionId:session.id});
+//  const accessToken= createAccessToken({
+//     id:user.id,
+//     name:user.name,
+//     email:user.email,
+//     sessionId:session.id,
+//  });
+//  const refreshToken= createRefreshToken({sessionId:session.id});
 
-const baseConfig ={httpOnly:true,secure:true}; // for the sale of ease, declaring a var here and will use in both the functions
+// const baseConfig ={httpOnly:true,secure:true}; // for the sale of ease, declaring a var here and will use in both the functions
 
-res.cookie("access_token",accessToken,{
-    ...baseConfig,
-    maxAge:ACCESS_TOKEN_EXPIRY,
-});
+// res.cookie("access_token",accessToken,{
+//     ...baseConfig,
+//     maxAge:ACCESS_TOKEN_EXPIRY,
+// });
 
-res.cookie("refresh_token",refreshToken,{
-    ...baseConfig,
-    maxAge:REFRESH_TOKEN_EXPIRY,
-});
+// res.cookie("refresh_token",refreshToken,{
+//     ...baseConfig,
+//     maxAge:REFRESH_TOKEN_EXPIRY,
+// });
 
+await  authenticateUser({req, res, user})
 res.redirect("/");
 }
 

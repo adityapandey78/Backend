@@ -121,5 +121,33 @@ export const refreshTokens = async (refreshToken) => {
 export const clearSession=async(sessionId)=>{
   return db.delete(sessionsTable)
             .where(eq(sessionsTable.id,sessionId));
-            
+
+}
+
+//Login with tokens 
+export const authenticateUser= async ({req, res, user, name, email})=>{
+  const session = await createSession(user.id,{
+          ip:req.clientIp,
+          userAgent:req.headers["user-agent"],
+      });
+  
+      const accessToken= createAccessToken({
+          id:user.id,
+          name:user.name||name,// ye name wo data me tha toh isliye lgaa and user.name for the second parts's usage 
+          email:user.email||email,
+          sessionId:session.id,
+      });
+      const refreshToken= createRefreshToken({sessionId:session.id});
+  
+      const baseConfig ={httpOnly:true,secure:true}; // for the sale of ease, declaring a var here and will use in both the functions
+  
+      res.cookie("access_token",accessToken,{
+          ...baseConfig,
+          maxAge:ACCESS_TOKEN_EXPIRY,
+      });
+  
+      res.cookie("refresh_token",refreshToken,{
+          ...baseConfig,
+          maxAge:REFRESH_TOKEN_EXPIRY,
+      });
 }
