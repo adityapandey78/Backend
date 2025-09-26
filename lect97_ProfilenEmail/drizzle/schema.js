@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {boolean, mysqlTable, serial, timestamp, varchar, int,text } from 'drizzle-orm/mysql-core';
 
 // Define users table first
@@ -11,6 +11,19 @@ export const usersTable = mysqlTable('users', {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+// Verify Email table
+export const verifyEmailTokensTable = mysqlTable("is_email_valid", {
+  id: int().autoincrement().primaryKey(),
+  userId: int("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  token: varchar({ length: 8 }).notNull(),
+  expiresAt: timestamp("expires_at")
+    // The brackets inside sql`` is necessary here, otherwise you would get syntax error.
+    .default(sql`(CURRENT_TIMESTAMP + INTERVAL 1 DAY)`)
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 // Define short_links table after users table
 export const short_links = mysqlTable('short_links', {
   id: serial('id').primaryKey(),

@@ -18,13 +18,22 @@ const markMigrationAsApplied = async () => {
     console.log('🔗 Connected to database');
 
     // Read the new migration file
-    const migrationFile = readFileSync('./drizzle/migration/0000_ordinary_mentallo.sql', 'utf8');
+    const migrationFile = readFileSync('./drizzle/migration/0000_blue_stature.sql', 'utf8');
     const migrationHash = createHash('sha256').update(migrationFile).digest('hex');
+    
+    // Get the next ID
+    const [maxIdResult] = await connection.execute(
+      'SELECT COALESCE(MAX(id), 0) + 1 as nextId FROM __drizzle_migrations'
+    );
+    const nextId = maxIdResult[0].nextId;
+    
+    console.log(`📝 Next migration ID: ${nextId}`);
+    console.log(`🔒 Migration hash: ${migrationHash.substring(0, 12)}...`);
     
     // Insert into migration history to mark it as applied
     await connection.execute(
       'INSERT INTO __drizzle_migrations (id, hash, created_at) VALUES (?, ?, ?)',
-      [4, migrationHash, Date.now()]
+      [nextId, migrationHash, Date.now()]
     );
 
     console.log('✅ Marked migration as applied without running it');
