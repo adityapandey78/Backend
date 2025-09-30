@@ -15,6 +15,13 @@
       "when": 1758885650889,
       "tag": "0001_powerful_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1759251869914,
+      "tag": "0002_ambitious_roland_deschain",
+      "breakpoints": true
     }
   ]
 }
