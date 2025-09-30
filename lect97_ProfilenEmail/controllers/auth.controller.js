@@ -162,3 +162,13 @@ export const getProfilePage= async(req,res)=>{
         }
     })
 }
+//get Verify email page
+export const getVerifyEmailPage=async (req,res)=>{
+    if(!req.user || req.user.isEmailValid) return res.redirect("/");
+
+    return res.render("auth/verify-email",{
+        email:req.user.email,
+        
+    })
+
+}

@@ -34,14 +34,14 @@ export const comparePassword = async (hash, password) => {
 
 // token generating service
 export const generateToken = ({ id, name, email }) => {
-  return jwt.sign({ id, name, email }, process.env.JWT_SECERET, {
+  return jwt.sign({ id, name, email }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
 
 //verify JWT TOKEN
 export const verifyJWTToken = (token) => {
-  return jwt.verify(token, process.env.JWT_SECERET);
+  return jwt.verify(token, process.env.JWT_SECRET);
 };
 
 export const createSession = async (userId, { ip, userAgent }) => {
@@ -71,12 +71,13 @@ export const findUserById = async (userId) => {
 };
 //createAccessToken
 export const createAccessToken = ({ id, name, email, sessionId }) => {
-  return jwt.sign({ id, name, email, sessionId }, process.env.JWT_SECERET, {
+  console.log("JWT_SECRET in createAccessToken:", process.env.JWT_SECRET ? "***SET***" : "UNDEFINED");
+  return jwt.sign({ id, name, email, sessionId }, process.env.JWT_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRY / MILLISECONDS_PER_SECOND, //expires in "15m"
   });
 };
 export const createRefreshToken = ({ sessionId }) => {
-  return jwt.sign({ sessionId }, process.env.JWT_SECERET, {
+  return jwt.sign({ sessionId }, process.env.JWT_SECRET, {
     expiresIn: REFRESH_TOKEN_EXPIRY / MILLISECONDS_PER_SECOND, //expires in "15m"
   });
 };

@@ -30,4 +30,8 @@ router
       .route("/logout")
       .get(authControllers.logoutUser);
 
+router
+      .route("/verify-email")
+      .get(authControllers.getVerifyEmailPage);
+
 export const authRoutes = router;

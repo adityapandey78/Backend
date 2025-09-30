@@ -24,7 +24,7 @@ export const verifyEmailTokensTable = mysqlTable("is_email_valid", {
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-// Define short_links table after users table
+// Define short_links tab le after users table
 export const short_links = mysqlTable('short_links', {
   id: serial('id').primaryKey(),
   shortCode: varchar('shortCode', { length: 16 }).notNull().unique(),
