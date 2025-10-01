@@ -1,6 +1,6 @@
 import { db } from "../config/db-client.js";
 import { sessionsTable, short_links, usersTable, verifyEmailTokensTable } from "../drizzle/schema.js";
-import { eq,lt } from "drizzle-orm";
+import { eq,lt, sql } from "drizzle-orm";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import {
@@ -171,13 +171,31 @@ export const generateRandomToken = async(digit=8)=>{
 
 // insertVerifyEmailToken
 export const insertVerifyEmailToken = async({userId,token})=>{
-  await db.delete(verifyEmailTokensTable)
+
+  return db.transaction( async(tx)=>{
+
+  try {
+    console.log("Inserting the token in to DB");
+  await tx.delete(verifyEmailTokensTable)
           .where(lt(verifyEmailTokensTable.expiresAt, sql`CURRENT_TIMESTAMP`));
-  return await db.insert(verifyEmailTokensTable).values({userId,token});
+
+  //delete the existing the tokens for this specific user
+  await tx
+          .delete(verifyEmailTokensTable)
+          .where(eq(verifyEmailTokensTable.userId,userId));
+          
+ await db.insert(verifyEmailTokensTable).values({userId,token});
+  } catch (error) {
+    console.log("Unable to insert into DB", error);
+    console.error(error);
+  }
+  })
 }
 
 //createVerifyEmailLink
 export const createVerifyEmailLink= async({email,token})=>{
     const uriEncodedEmail= encodeURIComponent(email);
-    return `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`
+    const generatedURL= `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`;
+    console.log("The generated URL is ", generatedURL);
+    return generatedURL;
 }

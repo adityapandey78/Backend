@@ -8,6 +8,7 @@ export const env = z.object({
     DATABASE_PASSWORD: z.string().default("123456"), // Use your actual password as default
     DATABASE_NAME: z.string().default("url_shortner_mysql"),
     JWT_SECRET: z.string().default("asddfgjkxcvk"),
+    FRONTEND_URL: z.string().default("http://localhost:3000"),
 }).parse(process.env);
 
 // console.log("🔧 Environment variables loaded:");

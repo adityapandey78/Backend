@@ -36,6 +36,7 @@ router
 
 router
       .route("/resend-verification-link")
-      .get(authControllers.resendverificationLink);
+      .get(authControllers.resendVerificationLink)
+      .post(authControllers.resendVerificationLink);
 
 export const authRoutes = router;
