@@ -1,6 +1,6 @@
 import { db } from "../config/db-client.js";
-import { sessionsTable, short_links, usersTable } from "../drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { sessionsTable, short_links, usersTable, verifyEmailTokensTable } from "../drizzle/schema.js";
+import { eq,lt } from "drizzle-orm";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import {
@@ -8,7 +8,7 @@ import {
   MILLISECONDS_PER_SECOND,
   REFRESH_TOKEN_EXPIRY,
 } from "../config/constants.js";
-
+import crypto from "crypto";
 export const getUserByEmail = async (email) => {
   const [user] = await db
     .select()
@@ -70,9 +70,9 @@ export const findUserById = async (userId) => {
   return user;
 };
 //createAccessToken
-export const createAccessToken = ({ id, name, email, sessionId }) => {
+export const createAccessToken = ({ id, name, email, sessionId, isEmailValid }) => {
   console.log("JWT_SECRET in createAccessToken:", process.env.JWT_SECRET ? "***SET***" : "UNDEFINED");
-  return jwt.sign({ id, name, email, sessionId }, process.env.JWT_SECRET, {
+  return jwt.sign({ id, name, email, sessionId, isEmailValid }, process.env.JWT_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRY / MILLISECONDS_PER_SECOND, //expires in "15m"
   });
 };
@@ -137,7 +137,7 @@ export const authenticateUser= async ({req, res, user, name, email})=>{
           id:user.id,
           name:user.name||name,// ye name wo data me tha toh isliye lgaa and user.name for the second parts's usage 
           email:user.email||email,
-          isEmailValid:false,
+          isEmailValid:user.isEmailValid,
           sessionId:session.id,
       });
       const refreshToken= createRefreshToken({sessionId:session.id});
@@ -160,4 +160,24 @@ export const getAllShortLinks=async(userId)=>{
   return await db.select()
                   .from(short_links)
                   .where(eq(short_links.id,userId));
+}
+
+export const generateRandomToken = async(digit=8)=>{
+  const min= 10**(digit-1);
+  const max=10**digit;
+
+  return crypto.randomInt(min,max).toString();
+}
+
+// insertVerifyEmailToken
+export const insertVerifyEmailToken = async({userId,token})=>{
+  await db.delete(verifyEmailTokensTable)
+          .where(lt(verifyEmailTokensTable.expiresAt, sql`CURRENT_TIMESTAMP`));
+  return await db.insert(verifyEmailTokensTable).values({userId,token});
+}
+
+//createVerifyEmailLink
+export const createVerifyEmailLink= async({email,token})=>{
+    const uriEncodedEmail= encodeURIComponent(email);
+    return `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`
 }

@@ -11,8 +11,12 @@ import {
     clearSession,
     authenticateUser,
     findUserById,
-    getAllShortLinks
+    getAllShortLinks,
+    generateRandomToken,
+    insertVerifyEmailToken,
+    createVerifyEmailLink,
 } from "../services/auth.services.js";
+import { sendEmail } from "../lib/nodemailer.js";
 import { loginUserSchema, registerUserSchema } from "../validators/auth-validator.js";
 
 export const getRegisterPage=(req,res)=>{
@@ -156,7 +160,7 @@ export const getProfilePage= async(req,res)=>{
             id:user.id,
             name:user.name,
             email:user.email,
-            isEmailVerfied:user.isEmailValid,
+            isEmailValid:user.isEmailValid,
             createdAt:user.createdAt,
             links:userShortLinks
         }
@@ -166,15 +170,48 @@ export const getProfilePage= async(req,res)=>{
 export const getVerifyEmailPage=async (req,res)=>{
     console.log("req.user: ", req.user);
     console.log("req.user.isEmailValid :", req.user.isEmailValid);
-    if(!req.user || req.user.isEmailValid) return res.redirect("/");
+    
+    if(!req.user) return res.redirect("/login");
+    
+    // If user is already verified, redirect to home
+    if(req.user.isEmailValid === true) return res.redirect("/");
 
-    if(!req.user) res.redirect("/");
+    const user = await findUserById(req.user.id);
 
-    const user =await findUserById(req.user.id);
-
-    if(!user ||user.isEmailValid) return res.redirect("/");
+    if(!user) return res.redirect("/login");
+    if(user.isEmailValid === true) return res.redirect("/");
     return res.render("auth/verify-email",{
         email:req.user.email,
     })
 
 }
+export const resendverificationLink = async(req,res)=>{
+    if(!req.user) res.redirect("/");
+
+    const user =await findUserById(req.user.id);
+
+    if(!user ||user.isEmailValid) return res.redirect("/");
+
+    const randomToken = generateRandomToken();
+
+    await insertVerifyEmailToken({userId:req.user.id, token:randomToken});
+
+    const verifyEmailLink= await createVerifyEmailLink({
+        email:req.user.email,
+        token:randomToken
+    });
+
+    sendEmail({
+        to:req.user.email,
+        subject:"verify your email",
+        html:`
+        <p>Click the link below to verify your email:</p>
+        <a href="${verifyEmailLink}">Verify Email</a>
+        <p>Or you can use this token: <strong>${randomToken}</strong></p>
+        <a href="${verifyEmailLink}"> Verify Email </a>        
+        `
+    }).catch(console.error);
+
+    res.redirect("/verify-email");
+};
+
