@@ -229,7 +229,7 @@ export const resendVerificationLink = async(req,res)=>{
 export const verifyEmailToken= async(req,res)=>{
     const{data,error} = verifyEmailSchema.safeParse(req.query);
     if(error){
-        return res.send("VErifiation link invalid or expired");
+        return res.send("Verifiation link invalid or expired");
     }
 
     const token= await findVerificationEmailToken(data);
@@ -249,5 +249,5 @@ export const verifyEmailToken= async(req,res)=>{
 
     clearVerifyEmailTokens(token.email).catch(console.error);
 
-    return res.redirect("/");
+    return res.redirect("/profile");
 }

@@ -227,47 +227,73 @@ export const createVerifyEmailLink= async({email,token})=>{
     return generatedLink;
 }
 
+// export const findVerificationEmailToken=async({token, email})=>{
+//   //.select({key:table.column}) -> Method to select data in the drizzle
+//   const tokenData =await db.select({
+//     userId:verifyEmailTokensTable.userId,
+//     token:verifyEmailTokensTable.token,
+//     expiresAt:verifyEmailTokensTable.expiresAt,
+//   })
+//   .from(verifyEmailTokensTable)
+//   .where(
+//     and(
+//       //dono hi condiction full fill ho
+//       eq(verifyEmailTokensTable.token,token),
+//       gte(verifyEmailTokensTable.expiresAt,sql`CURRENT_TIMESTAMP`)
+//     )
+//     //expiry date greater hona chaiye
+//   );
+
+//   if(!tokenData.length){
+//     return null;
+//   }
+//   // const{userId}= tokenData[0];
+//   const userId= tokenData[0].userId; //since driizzle array return krta hai objects ka toh isliye
+
+//   const userData= await db.select({
+//     userId:usersTable.id,
+//     email:usersTable.email,
+//   })
+//   .from(usersTable)
+//   .where(eq(usersTable.id,userId));
+
+
+//   if(!userData.length){
+//     return null;
+//   }
+
+//   return{
+//     userId:userData[0].userId,
+//     email:userData[0].email,
+//     token:userData[0].token,
+//     expiresAt:userData[0].expiresAt,
+//   }
+// }
+
+// Instead of above longcode, we are using the sql Joins
+
 export const findVerificationEmailToken=async({token, email})=>{
   //.select({key:table.column}) -> Method to select data in the drizzle
-  const tokenData =await db.select({
-    userId:verifyEmailTokensTable.userId,
-    token:verifyEmailTokensTable.token,
-    expiresAt:verifyEmailTokensTable.expiresAt,
-  })
-  .from(verifyEmailTokensTable)
-  .where(
-    and(
-      //dono hi condiction full fill ho
-      eq(verifyEmailTokensTable.token,token),
-      gte(verifyEmailTokensTable.expiresAt,sql`CURRENT_TIMESTAMP`)
-    )
-    //expiry date greater hona chaiye
-  );
+  const rows = await db
+    .select({
+      userId: usersTable.id,
+      email: usersTable.email,
+      token: verifyEmailTokensTable.token,
+      expiresAt: verifyEmailTokensTable.expiresAt,
+    })
+    .from(verifyEmailTokensTable)
+    .innerJoin(usersTable, eq(verifyEmailTokensTable.userId, usersTable.id))
+    .where(
+      and(
+        eq(verifyEmailTokensTable.token, token),
+        eq(usersTable.email, email),
+        gte(verifyEmailTokensTable.expiresAt, sql`CURRENT_TIMESTAMP`)
+      )
+    );
 
-  if(!tokenData.length){
-    return null;
-  }
-  // const{userId}= tokenData[0];
-  const userId= tokenData[0].userId; //since driizzle array return krta hai objects ka toh isliye
-
-  const userData= await db.select({
-    userId:usersTable.id,
-    email:usersTable.email,
-  })
-  .from(usersTable)
-  .where(eq(usersTable.id,userId));
-
-
-  if(!userData.length){
-    return null;
-  }
-
-  return{
-    userId:userData[0].userId,
-    email:userData[0].email,
-    token:userData[0].token,
-    expiresAt:userData[0].expiresAt,
-  }
+  // Drizzle returns an array of rows. Return a single object or null so callers don't need to handle arrays.
+  if (!rows || rows.length === 0) return null;
+  return rows[0];
 }
 
 export const findVerificationEmailAndUpdate=async(email)=>{
@@ -281,7 +307,8 @@ export const clearVerifyEmailTokens=async(email)=>{
     const [user]=await db.select()
                         .from(usersTable)
                         .where(eq(usersTable.email,email));
-    
-    return await db.delete(verifyEmailTokensTable)
-                    .where(eq(verifyEmailTokensTable.userId,user.id))
+  if(!user) return 0;
+
+  return await db.delete(verifyEmailTokensTable)
+          .where(eq(verifyEmailTokensTable.userId, user.id))
 }
