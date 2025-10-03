@@ -1,6 +1,6 @@
 import { db } from "../config/db-client.js";
 import { sessionsTable, short_links, usersTable, verifyEmailTokensTable } from "../drizzle/schema.js";
-import { eq,lt, sql } from "drizzle-orm";
+import { and, eq,gte,lt, sql } from "drizzle-orm";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import {
@@ -184,7 +184,9 @@ export const insertVerifyEmailToken = async({userId,token})=>{
           .delete(verifyEmailTokensTable)
           .where(eq(verifyEmailTokensTable.userId,userId));
           
- await db.insert(verifyEmailTokensTable).values({userId,token});
+ await tx.insert(verifyEmailTokensTable).values({userId,token});
+ console.log("Insertion completed into the DB!");
+ 
   } catch (error) {
     console.log("Unable to insert into DB", error);
     console.error(error);
@@ -193,9 +195,93 @@ export const insertVerifyEmailToken = async({userId,token})=>{
 }
 
 //createVerifyEmailLink
+// export const createVerifyEmailLink= async({email,token})=>{
+//     const uriEncodedEmail= encodeURIComponent(email);
+//     const generatedURL= `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`;
+//     console.log("The generated URL is ", generatedURL);
+//     return generatedURL;
+// }
+
+//: URL API
+// The URL API in JavaScript provides a way to parse, construct, and manipulate URLs.
+// It includes the URL constructor for creating URL objects, which allow access to components like protocol, hostname, pathname, search, and hash.
+// Example: const url = new URL('https://example.com/path?query=value');
+// This is useful for handling URLs in web applications, such as generating verification links or parsing request URLs.
+
+//* Why to use URL API
+/**
+ * Easier URL Conctsruction
+ * Automatic Encoding
+ * Better Readibility
+ */
+
+//Creating the verify email link in using the URL API
+
 export const createVerifyEmailLink= async({email,token})=>{
-    const uriEncodedEmail= encodeURIComponent(email);
-    const generatedURL= `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`;
-    console.log("The generated URL is ", generatedURL);
-    return generatedURL;
+    const url=new URL(`${process.env.FRONTEND_URL}/verify-email-token`)
+    url.searchParams.append("token",token);
+    url.searchParams.append("email",email);
+
+    const generatedLink=url.toString();
+    console.log("The genrated link: ",generatedLink);
+    return generatedLink;
+}
+
+export const findVerificationEmailToken=async({token, email})=>{
+  //.select({key:table.column}) -> Method to select data in the drizzle
+  const tokenData =await db.select({
+    userId:verifyEmailTokensTable.userId,
+    token:verifyEmailTokensTable.token,
+    expiresAt:verifyEmailTokensTable.expiresAt,
+  })
+  .from(verifyEmailTokensTable)
+  .where(
+    and(
+      //dono hi condiction full fill ho
+      eq(verifyEmailTokensTable.token,token),
+      gte(verifyEmailTokensTable.expiresAt,sql`CURRENT_TIMESTAMP`)
+    )
+    //expiry date greater hona chaiye
+  );
+
+  if(!tokenData.length){
+    return null;
+  }
+  // const{userId}= tokenData[0];
+  const userId= tokenData[0].userId; //since driizzle array return krta hai objects ka toh isliye
+
+  const userData= await db.select({
+    userId:usersTable.id,
+    email:usersTable.email,
+  })
+  .from(usersTable)
+  .where(eq(usersTable.id,userId));
+
+
+  if(!userData.length){
+    return null;
+  }
+
+  return{
+    userId:userData[0].userId,
+    email:userData[0].email,
+    token:userData[0].token,
+    expiresAt:userData[0].expiresAt,
+  }
+}
+
+export const findVerificationEmailAndUpdate=async(email)=>{
+    return db
+        .update(usersTable)
+        .set({isEmailValid:true})
+        .where(eq(usersTable.email,email));
+};
+
+export const clearVerifyEmailTokens=async(email)=>{
+    const [user]=await db.select()
+                        .from(usersTable)
+                        .where(eq(usersTable.email,email));
+    
+    return await db.delete(verifyEmailTokensTable)
+                    .where(eq(verifyEmailTokensTable.userId,user.id))
 }
