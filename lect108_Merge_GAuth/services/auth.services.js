@@ -1,3 +1,9 @@
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 import { db } from "../config/db-client.js";
 import { sessionsTable, short_links, usersTable, verifyEmailTokensTable } from "../drizzle/schema.js";
 import { and, eq,gte,lt, sql } from "drizzle-orm";
@@ -10,6 +16,12 @@ import {
 } from "../config/constants.js";
 import crypto from "crypto";
 import { sendEmail } from "../lib/nodemailer.js";
+import mjml2html from 'mjml';
+import ejs from "ejs";
+
+
+
+
 export const getUserByEmail = async (email) => {
   const [user] = await db
     .select()
@@ -324,23 +336,32 @@ export  const sendNewVerifyEmailLink=async({userId,email})=>{
           email:email,
           token:randomToken
       });
-  
+      
       try {
+      //: Step1-> To get the email data
+        const mjmlTemplate = await fs.readFile(
+          path.join(__dirname, "..", "emails", "verify-email.mjml"),
+          "utf-8"
+        );
+      //:Step 2-> To Replace the placevalue with the actual values
+        const filledTemplate = ejs.render(mjmlTemplate, {
+          code: randomToken,
+          link: verifyEmailLink,
+        });
+
+      //: Step3: To convert MJML to HTML
+      const htmlOutput = mjml2html(filledTemplate).html;
           const emailResult = await sendEmail({
-              to:email,
-              subject:"verify your email",
-              html:`
-              <p>Click the link below to verify your email:</p>
-              <a href="${verifyEmailLink}">Verify Email</a>
-              <p>Or you can use this token: <strong>${randomToken}</strong></p>
-              <a href="${verifyEmailLink}"> Verify Email </a>        
-              `
+              to: email,
+              subject: "verify your email",
+              html: htmlOutput
           });
           console.log("Email sent successfully:", emailResult);
+          return { success: true, emailResult };
       } catch (error) {
           console.error("Failed to send email:", error);
-          req.flash("errors", "Failed to send verification email. Please try again.");
-          return res.redirect("/profile");
+          // Don't reference req/res here — let the caller handle UI/redirects.
+          return { success: false, error };
       }
   
 }
