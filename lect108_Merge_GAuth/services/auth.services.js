@@ -9,6 +9,7 @@ import {
   REFRESH_TOKEN_EXPIRY,
 } from "../config/constants.js";
 import crypto from "crypto";
+import { sendEmail } from "../lib/nodemailer.js";
 export const getUserByEmail = async (email) => {
   const [user] = await db
     .select()
@@ -311,4 +312,35 @@ export const clearVerifyEmailTokens=async(email)=>{
 
   return await db.delete(verifyEmailTokensTable)
           .where(eq(verifyEmailTokensTable.userId, user.id))
+}
+
+export  const sendNewVerifyEmailLink=async({userId,email})=>{
+  const randomToken = await generateRandomToken();
+      console.log("random token is:",randomToken);
+      
+      await insertVerifyEmailToken({userId, token:randomToken});
+  
+      const verifyEmailLink= await createVerifyEmailLink({
+          email:email,
+          token:randomToken
+      });
+  
+      try {
+          const emailResult = await sendEmail({
+              to:email,
+              subject:"verify your email",
+              html:`
+              <p>Click the link below to verify your email:</p>
+              <a href="${verifyEmailLink}">Verify Email</a>
+              <p>Or you can use this token: <strong>${randomToken}</strong></p>
+              <a href="${verifyEmailLink}"> Verify Email </a>        
+              `
+          });
+          console.log("Email sent successfully:", emailResult);
+      } catch (error) {
+          console.error("Failed to send email:", error);
+          req.flash("errors", "Failed to send verification email. Please try again.");
+          return res.redirect("/profile");
+      }
+  
 }

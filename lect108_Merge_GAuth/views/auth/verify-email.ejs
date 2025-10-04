@@ -18,20 +18,29 @@
   <body>
     <%- include('../partials/header') %>
 
-    <main class="container main-container">
+      <main class="verify-email-page container main-container">
       <h1 class="section-title text-center">Verify Your Email</h1>
-
       <div class="alert-container">
-        <% if(user) { %>
-        <div class="alert alert-success">
-          <i class="zmdi zmdi-check-circle"></i>
-          <span>You are logged in</span>
-        </div>
-        <% } else { %>
-        <div class="alert alert-warning">
-          <i class="zmdi zmdi-alert-circle"></i>
-          <span>You are not logged in</span>
-        </div>
+        <% // Use `success` and `errors` if provided by res.locals; otherwise fall back to empty arrays %>
+        <% const successMessages = (typeof success !== 'undefined' && success) ? success : []; %>
+        <% const errorMessages = (typeof errors !== 'undefined' && errors) ? errors : []; %>
+
+        <% if (successMessages && successMessages.length > 0) { %>
+          <% successMessages.forEach(function(msg){ %>
+            <div class="alert alert-success">
+              <i class="zmdi zmdi-check-circle"></i>
+              <span><%= msg %></span>
+            </div>
+          <% }) %>
+        <% } %>
+
+        <% if (errorMessages && errorMessages.length > 0) { %>
+          <% errorMessages.forEach(function(msg){ %>
+            <div class="alert alert-danger">
+              <i class="zmdi zmdi-alert-circle"></i>
+              <span><%= msg %></span>
+            </div>
+          <% }) %>
         <% } %>
       </div>
 
@@ -48,9 +57,9 @@
             method="post"
             class="form-inline"
           >
-            <button type="submit" class="btn btn-secondary">
-              Resend Verification Link
-            </button>
+              <button type="submit" class="btn btn-secondary verify-resend-btn">
+                Resend Verification Link
+              </button>
           </form>
         </div>
       </div>
@@ -62,21 +71,22 @@
               <label for="token" class="control-label"
                 >Enter 8-Digit Verification Code:</label
               >
-              <input
-                type="text"
-                name="token"
-                id="token"
-                class="form-control"
-                maxlength="8"
-                required
-                pattern="\d{8}"
-                title="Please enter an 8-digit number"
-              />
+                <input
+                  type="text"
+                  name="token"
+                  id="token"
+                  class="form-control otp-input"
+                  inputmode="numeric"
+                  maxlength="8"
+                  required
+                  pattern="\d{8}"
+                  title="Please enter an 8-digit number"
+                />
             </div>
 
             <input type="hidden" value="<%= email %>" name="email" />
 
-            <button type="submit" class="btn btn-primary">Verify Code</button>
+              <button type="submit" class="btn btn-primary verify-submit-btn">Verify Code</button>
           </form>
         </div>
       </div>
