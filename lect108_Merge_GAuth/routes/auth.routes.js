@@ -47,14 +47,16 @@ router
 router.route("/google/callback").get(authControllers.getGoogleLoginCallback);
 
 // Temporary debug route - REMOVE IN PRODUCTION
-router.get("/debug/env", async (req, res) => {
-    const { env } = await import("../config/env.js");
-    res.json({
-        hasGoogleClientId: !!env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_ID.length > 0,
-        hasGoogleSecret: !!env.GOOGLE_CLIENT_SECRET && env.GOOGLE_CLIENT_SECRET.length > 0,
-        clientIdLength: env.GOOGLE_CLIENT_ID?.length || 0,
-        frontendUrl: env.FRONTEND_URL,
-    });
-});
+// router.get("/debug/env", async (req, res) => {
+//     const { env } = await import("../config/env.js");
+//     res.json({
+//         hasGoogleClientId: !!env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_ID.length > 0,
+//         hasGoogleSecret: !!env.GOOGLE_CLIENT_SECRET && env.GOOGLE_CLIENT_SECRET.length > 0,
+//         clientIdLength: env.GOOGLE_CLIENT_ID?.length || 0,
+//         frontendUrl: env.FRONTEND_URL,
+//     });
+// });
 
+router
+      .route("/edit-profile").get(authControllers.getEditProfilePage)
 export const authRoutes = router;

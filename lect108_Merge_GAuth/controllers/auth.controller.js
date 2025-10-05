@@ -364,3 +364,20 @@ export const getGoogleLoginCallback= async(req,res)=>{
 
   res.redirect("/");
 }
+
+export const getEditProfilePage = async (req, res) => {
+    if (!req.user) return res.redirect("/");
+
+    const user = await findUserById(req.user.id);
+    if (!user) return res.redirect("/login");
+
+    return res.render("auth/edit-profile", {
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            isEmailValid: user.isEmailValid,
+            createdAt: user.createdAt,
+        },
+    });
+}
