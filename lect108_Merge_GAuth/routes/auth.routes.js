@@ -41,4 +41,20 @@ router
       .route("/verify-email-token")
       .get(authControllers.verifyEmailToken);
 
+router 
+      .route("/google").get(authControllers.getGoogleLoginPage);
+
+router.route("/google/callback").get(authControllers.getGoogleLoginCallback);
+
+// Temporary debug route - REMOVE IN PRODUCTION
+router.get("/debug/env", async (req, res) => {
+    const { env } = await import("../config/env.js");
+    res.json({
+        hasGoogleClientId: !!env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_ID.length > 0,
+        hasGoogleSecret: !!env.GOOGLE_CLIENT_SECRET && env.GOOGLE_CLIENT_SECRET.length > 0,
+        clientIdLength: env.GOOGLE_CLIENT_ID?.length || 0,
+        frontendUrl: env.FRONTEND_URL,
+    });
+});
+
 export const authRoutes = router;

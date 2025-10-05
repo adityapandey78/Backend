@@ -1,7 +1,3 @@
-import dotenv from 'dotenv';
-// Load environment variables first
-dotenv.config();
-
 import express from "express";
 import cookieParser from 'cookie-parser';
 import session from 'express-session';

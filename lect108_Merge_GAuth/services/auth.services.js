@@ -5,7 +5,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 import { db } from "../config/db-client.js";
-import { sessionsTable, short_links, usersTable, verifyEmailTokensTable } from "../drizzle/schema.js";
+import { oauthAccountsTable, sessionsTable, short_links, usersTable, verifyEmailTokensTable } from "../drizzle/schema.js";
 import { and, eq,gte,lt, sql } from "drizzle-orm";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
@@ -15,7 +15,8 @@ import {
   REFRESH_TOKEN_EXPIRY,
 } from "../config/constants.js";
 import crypto from "crypto";
-import { sendEmail } from "../lib/nodemailer.js";
+// import { sendEmail } from "../lib/nodemailer.js";
+import { sendEmail } from '../lib/send-email.js';
 import mjml2html from 'mjml';
 import ejs from "ejs";
 
@@ -364,4 +365,70 @@ export  const sendNewVerifyEmailLink=async({userId,email})=>{
           return { success: false, error };
       }
   
+}
+
+export const getUserWithOauthId= async({email,provider})=>{
+  const [user] = await db
+        .select({
+          id:usersTable.id,
+          name:usersTable.name,
+          email:usersTable.email,
+          isEmailValid:usersTable.isEmailValid,
+          providerAccountId:oauthAccountsTable.providerAccountId,
+          provider:oauthAccountsTable.provider,
+        })
+        .from(usersTable)
+        .leftJoin(
+          oauthAccountsTable,
+          and(
+            eq(oauthAccountsTable.userId, usersTable.id),
+            eq(oauthAccountsTable.provider, provider)
+          )
+        )
+        .where(eq(usersTable.email, email));
+    return user;
+
+}
+
+export const linkUserWithOauth= async({userId,provider,providerAccountId})=>{
+    await db.insert(oauthAccountsTable).values({
+      userId,
+      provider,
+      providerAccountId
+    });
+}
+
+export const createUserWithOauth = async({
+  name,
+  email,
+  provider,
+  providerAccountId
+})=>{
+  const user=await db.transaction(async(trx)=>{
+    const [user]= await trx
+          .insert(usersTable)
+          .values({
+            email,
+            name,
+            //password
+            isEmailValid:true,
+          })
+          .$returningId();
+   await trx.insert(oauthAccountsTable).values({
+          provider,
+          providerAccountId,
+          userId:user.id
+   });
+
+   return{
+    id:user.id,
+    name,
+    email,
+    isEmailValid,
+    provider,
+    providerAccountId
+   };
+  });
+
+  return user;
 }

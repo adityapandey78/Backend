@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import {boolean, mysqlTable, serial, timestamp, varchar, int,text } from 'drizzle-orm/mysql-core';
+import {boolean, mysqlTable, serial, timestamp, varchar, int,text, mysqlEnum } from 'drizzle-orm/mysql-core';
 
 // Define users table first
 export const usersTable = mysqlTable('users', {
@@ -57,6 +57,21 @@ export const shortLinksrelations = relations(short_links,({one})=>({
     references:[usersTable.id], //aur kiske sath ref kr rhe hain
   })
 }))
+
+//Schema for O Auth login sessions
+
+export const oauthAccountsTable=mysqlTable("oauth_accounts",{
+  id:int("id").autoincrement().primaryKey(),
+  userId: int("user_id")
+          .notNull()
+          .references(()=>usersTable.id,{onDelete:"cascade"}),
+  provider:mysqlEnum("provider",["google","github"]).notNull(),
+  providerAccountId:varchar("provider_account_id",{length:255})
+        .notNull()
+        .unique(),
+   createdAt:timestamp("created_at").defaultNow().notNull(),
+});
+
 
 //Schema for the session table -- auth storage on the server
 
