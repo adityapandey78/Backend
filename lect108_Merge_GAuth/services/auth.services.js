@@ -405,12 +405,16 @@ export const createUserWithOauth = async({
   providerAccountId
 })=>{
   const user=await db.transaction(async(trx)=>{
+    // Generate a random password for OAuth users (they won't use it)
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const hashedPassword = await hashPassword(randomPassword);
+    
     const [user]= await trx
           .insert(usersTable)
           .values({
             email,
             name,
-            //password
+            password: hashedPassword,
             isEmailValid:true,
           })
           .$returningId();
@@ -424,7 +428,7 @@ export const createUserWithOauth = async({
     id:user.id,
     name,
     email,
-    isEmailValid,
+    isEmailValid: true,
     provider,
     providerAccountId
    };
